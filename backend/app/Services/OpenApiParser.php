@@ -8,6 +8,7 @@ use App\Models\McpTool;
 use App\Models\Service;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Symfony\Component\Yaml\Yaml;
 
 final class OpenApiParser
 {
@@ -18,6 +19,11 @@ final class OpenApiParser
      */
     public function parseAndCreateTools(Service $service, array $spec): array
     {
+        // Auto-detect custom endpoint list format (non-OpenAPI)
+        if ($this->isCustomEndpointFormat($spec)) {
+            return $this->parseCustomFormat($service, $spec);
+        }
+
         $paths = $spec['paths'] ?? [];
         $tools = [];
         $sortOrder = 0;
@@ -52,6 +58,138 @@ final class OpenApiParser
         }
 
         return $tools;
+    }
+
+    /**
+     * Detect custom endpoint list format (has "apis" key with nested endpoints).
+     */
+    private function isCustomEndpointFormat(array $spec): bool
+    {
+        return isset($spec['apis']) && is_array($spec['apis']) && ! isset($spec['openapi']) && ! isset($spec['swagger']);
+    }
+
+    /**
+     * Parse custom endpoint list format into MCP tools.
+     *
+     * Expected structure:
+     * {
+     *   "apis": {
+     *     "surface_name": {
+     *       "prefix": "/api",
+     *       "endpoints": {
+     *         "group_name": [
+     *           { "method": "GET", "path": "/api/...", "description": "...", "parameters": {...} }
+     *         ]
+     *       }
+     *     }
+     *   }
+     * }
+     *
+     * @return array<McpTool>
+     */
+    private function parseCustomFormat(Service $service, array $spec): array
+    {
+        $tools = [];
+        $sortOrder = 0;
+
+        foreach ($spec['apis'] as $surface) {
+            $endpoints = $surface['endpoints'] ?? [];
+
+            foreach ($endpoints as $groupName => $endpointList) {
+                if (! is_array($endpointList)) {
+                    continue;
+                }
+
+                foreach ($endpointList as $endpoint) {
+                    $method = strtoupper($endpoint['method'] ?? '');
+                    $path = $endpoint['path'] ?? '';
+
+                    if ($method === '' || $path === '') {
+                        continue;
+                    }
+
+                    if (! in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'])) {
+                        continue;
+                    }
+
+                    $name = $this->generateCustomToolName($endpoint, $method, $path);
+                    $description = $endpoint['description'] ?? "{$method} {$path}";
+                    $isDestructive = in_array($method, ['DELETE', 'PUT']);
+
+                    $inputSchema = $this->buildCustomInputSchema($endpoint, $path);
+
+                    $tool = $service->tools()->create([
+                        'name' => $name,
+                        'description' => $description,
+                        'http_method' => $method,
+                        'endpoint_path' => $path,
+                        'input_schema' => $inputSchema,
+                        'output_schema' => null,
+                        'is_enabled' => ! $isDestructive,
+                        'is_destructive' => $isDestructive,
+                        'sort_order' => $sortOrder++,
+                    ]);
+
+                    $tools[] = $tool;
+                }
+            }
+        }
+
+        return $tools;
+    }
+
+    private function generateCustomToolName(array $endpoint, string $method, string $path): string
+    {
+        // Use controller method if available (e.g. "UserTicketController@get" → "user_ticket_get")
+        if (! empty($endpoint['controller'])) {
+            $controller = $endpoint['controller'];
+            // Extract class@method
+            $parts = explode('@', $controller);
+            $className = $parts[0] ?? '';
+            $methodName = $parts[1] ?? '';
+
+            // Get last segment of namespaced class
+            $classSegments = explode('\\', $className);
+            $shortClass = end($classSegments);
+            // Remove "Controller" suffix
+            $shortClass = str_replace('Controller', '', $shortClass);
+
+            $name = Str::snake($shortClass) . '_' . Str::snake($methodName);
+
+            return Str::limit($name, 64, '');
+        }
+
+        // Fall back to method + path
+        return $this->generateToolName($endpoint, $method, $path);
+    }
+
+    private function buildCustomInputSchema(array $endpoint, string $path): array
+    {
+        $properties = [];
+        $required = [];
+
+        // Extract path parameters from URL pattern (e.g. {event_id})
+        preg_match_all('/\{(\w+)\}/', $path, $matches);
+        foreach ($matches[1] as $paramName) {
+            $type = 'string';
+            // Use explicit parameter types if provided
+            if (isset($endpoint['parameters'][$paramName])) {
+                $type = $endpoint['parameters'][$paramName] === 'integer' ? 'integer' : 'string';
+            }
+
+            $properties[$paramName] = [
+                'type' => $type,
+                'description' => "Path parameter: {$paramName}",
+                'in' => 'path',
+            ];
+            $required[] = $paramName;
+        }
+
+        return [
+            'type' => 'object',
+            'properties' => $properties,
+            'required' => $required,
+        ];
     }
 
     /**
@@ -93,10 +231,24 @@ final class OpenApiParser
      */
     public function parseFromJson(Service $service, string $json): array
     {
+        // Strip BOM and trim whitespace
+        $json = ltrim($json, "\xEF\xBB\xBF");
+        $json = trim($json);
+
+        // Try JSON first
         $spec = json_decode($json, true);
 
+        // If JSON fails, try YAML
         if ($spec === null) {
-            throw new \RuntimeException('Invalid JSON provided for OpenAPI spec');
+            try {
+                $spec = Yaml::parse($json);
+            } catch (\Exception) {
+                $spec = null;
+            }
+        }
+
+        if (! is_array($spec)) {
+            throw new \RuntimeException('Invalid spec provided. Supports JSON and YAML formats.');
         }
 
         $apiConfig = $service->apiConfig;

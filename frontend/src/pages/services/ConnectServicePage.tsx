@@ -99,7 +99,21 @@ export function ConnectServicePage() {
           toast.success(`${result.meta.tools_created} tools imported`)
           setStep('review')
         },
-        onError: () => toast.error('Failed to parse OpenAPI spec'),
+        onError: (err: unknown) => {
+          let msg = 'Failed to parse OpenAPI spec'
+          if (err && typeof err === 'object') {
+            const axiosErr = err as { response?: { data?: { message?: string }; status?: number }; message?: string }
+            if (axiosErr.response?.data?.message) {
+              msg = axiosErr.response.data.message
+            } else if (axiosErr.response?.status) {
+              msg = `Server error: ${axiosErr.response.status}`
+            } else if (axiosErr.message) {
+              msg = axiosErr.message
+            }
+          }
+          console.error('Connect error:', err)
+          toast.error(msg)
+        },
       }
     )
   }
@@ -247,7 +261,7 @@ export function ConnectServicePage() {
                 <Label htmlFor="spec_json">Paste JSON Spec</Label>
                 <Textarea
                   id="spec_json"
-                  placeholder='{"openapi": "3.0.0", ...}'
+                  placeholder='{"openapi": "3.0.0", ...} or YAML'
                   rows={8}
                   className="font-mono text-sm"
                   {...openApiForm.register('spec_json')}

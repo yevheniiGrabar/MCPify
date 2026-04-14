@@ -1,20 +1,23 @@
-import pg from 'pg'
+import mysql from 'mysql2/promise'
 import 'dotenv/config'
 
-const { Pool } = pg
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+const pool = mysql.createPool({
+  uri: process.env.DATABASE_URL,
+  waitForConnections: true,
+  connectionLimit: 10,
+  idleTimeout: 30000,
 })
 
-export async function query<T extends pg.QueryResultRow>(
+export interface QueryResult<T> {
+  rows: T[]
+}
+
+export async function query<T>(
   text: string,
   params?: unknown[]
-): Promise<pg.QueryResult<T>> {
-  return pool.query<T>(text, params)
+): Promise<QueryResult<T>> {
+  const [rows] = await pool.execute(text, params)
+  return { rows: rows as T[] }
 }
 
 export { pool }

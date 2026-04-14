@@ -47,6 +47,8 @@ Route::prefix('v1')->group(function (): void {
 
         // Analytics
         Route::get('analytics/summary', [AnalyticsController::class, 'summary']);
+        Route::get('services/{service}/analytics', [AnalyticsController::class, 'serviceAnalytics']);
+        Route::get('services/{service}/analytics/export', [AnalyticsController::class, 'exportCsv']);
         Route::get('services/{service}/audit-log', [AnalyticsController::class, 'auditLog']);
     });
 

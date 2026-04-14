@@ -23,17 +23,28 @@ class ServiceConnectorController extends Controller
         $this->authorizeTeamOwnership($request, $service);
 
         try {
+            $specJson = $request->input('spec_json');
+
+            // If spec_json arrives as an already-decoded array/object (JSON content-type), re-encode it
+            if (is_array($specJson)) {
+                $specJson = json_encode($specJson);
+            }
+
             $tools = $action->execute(
                 service: $service,
                 url: $request->string('url')->toString() ?: null,
-                specJson: $request->string('spec_json')->toString() ?: null,
+                specJson: is_string($specJson) && $specJson !== '' ? $specJson : null,
             );
 
             return response()->json([
                 'data' => McpToolResource::collection($tools),
                 'meta' => ['tools_created' => count($tools)],
             ], 201);
-        } catch (\RuntimeException $e) {
+        } catch (\Throwable $e) {
+            \Log::error('connect/openapi failed', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ]);
             return response()->json(['message' => $e->getMessage()], 422);
         }
     }

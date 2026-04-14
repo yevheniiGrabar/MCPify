@@ -52,6 +52,7 @@ fastify.all<{ Params: { token: string } }>(
     // Create stateless transport (one per request)
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined, // stateless mode
+      enableJsonResponse: true, // return JSON instead of SSE when possible (ChatGPT compatibility)
     })
 
     // Connect the server to the transport

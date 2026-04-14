@@ -51,7 +51,7 @@ export function ServiceDetailPage() {
 
   if (!service) return null
 
-  const mcpUrl = `${import.meta.env.VITE_API_URL}/mcp/${service.mcp_url_token}`
+  const mcpUrl = `${import.meta.env.VITE_MCP_WORKER_URL || import.meta.env.VITE_API_URL}/mcp/${service.mcp_url_token}`
 
   return (
     <div className="max-w-3xl space-y-6">

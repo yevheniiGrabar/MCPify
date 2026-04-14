@@ -12,7 +12,7 @@ class ConnectOpenApiRequest extends FormRequest
     {
         return [
             'url' => ['nullable', 'url', 'max:2048', 'required_without:spec_json'],
-            'spec_json' => ['nullable', 'json', 'required_without:url'],
+            'spec_json' => ['nullable', 'string', 'required_without:url'],
         ];
     }
 }

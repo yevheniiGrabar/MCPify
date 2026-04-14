@@ -29,8 +29,8 @@ interface ToolRow {
   endpoint_path: string
   input_schema: Record<string, unknown> | null
   output_schema: Record<string, unknown> | null
-  is_enabled: boolean
-  is_destructive: boolean
+  is_enabled: boolean | number
+  is_destructive: boolean | number
   sort_order: number
 }
 
@@ -45,7 +45,7 @@ export async function getServiceByToken(token: string): Promise<ServiceWithConfi
   const serviceResult = await query<ServiceRow>(
     `SELECT id, uuid, name, status, mcp_url_token
      FROM services
-     WHERE mcp_url_token = $1 AND status = 'active' AND deleted_at IS NULL
+     WHERE mcp_url_token = ? AND status = 'active' AND deleted_at IS NULL
      LIMIT 1`,
     [token]
   )
@@ -59,7 +59,7 @@ export async function getServiceByToken(token: string): Promise<ServiceWithConfi
   const configResult = await query<ApiConfigRow>(
     `SELECT id, service_id, type, base_url, auth_type, auth_config
      FROM api_configs
-     WHERE service_id = $1
+     WHERE service_id = ?
      LIMIT 1`,
     [service.id]
   )
@@ -94,12 +94,19 @@ export async function getEnabledTools(serviceId: number): Promise<ToolRow[]> {
     `SELECT id, service_id, name, description, http_method, endpoint_path,
             input_schema, output_schema, is_enabled, is_destructive, sort_order
      FROM mcp_tools
-     WHERE service_id = $1 AND is_enabled = true
+     WHERE service_id = ? AND is_enabled = 1
      ORDER BY sort_order ASC`,
     [serviceId]
   )
 
-  return result.rows
+  // MySQL returns tinyint(1) as 0/1, normalize to boolean
+  return result.rows.map((row) => ({
+    ...row,
+    input_schema: typeof row.input_schema === 'string' ? JSON.parse(row.input_schema) : row.input_schema,
+    output_schema: typeof row.output_schema === 'string' ? JSON.parse(row.output_schema) : row.output_schema,
+    is_enabled: Boolean(row.is_enabled),
+    is_destructive: Boolean(row.is_destructive),
+  }))
 }
 
 export async function getToolByName(serviceId: number, name: string): Promise<ToolRow | null> {
@@ -107,12 +114,21 @@ export async function getToolByName(serviceId: number, name: string): Promise<To
     `SELECT id, service_id, name, description, http_method, endpoint_path,
             input_schema, output_schema, is_enabled, is_destructive, sort_order
      FROM mcp_tools
-     WHERE service_id = $1 AND name = $2 AND is_enabled = true
+     WHERE service_id = ? AND name = ? AND is_enabled = 1
      LIMIT 1`,
     [serviceId, name]
   )
 
-  return result.rows[0] ?? null
+  const row = result.rows[0]
+  if (!row) return null
+
+  return {
+    ...row,
+    input_schema: typeof row.input_schema === 'string' ? JSON.parse(row.input_schema) : row.input_schema,
+    output_schema: typeof row.output_schema === 'string' ? JSON.parse(row.output_schema) : row.output_schema,
+    is_enabled: Boolean(row.is_enabled),
+    is_destructive: Boolean(row.is_destructive),
+  }
 }
 
 export async function logToolCall(
@@ -128,7 +144,7 @@ export async function logToolCall(
   const responseStatus = status === 'success' ? 200 : 500
   await query(
     `INSERT INTO tool_calls (tool_id, service_id, input_params, response_status, error_message, duration_ms, caller_ip, caller_user_agent, called_at, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), NOW())`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())`,
     [
       toolId,
       serviceId,
