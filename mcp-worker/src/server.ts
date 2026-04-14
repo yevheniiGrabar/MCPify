@@ -3,6 +3,7 @@ import Fastify from 'fastify'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { getServiceByToken } from './db/queries.js'
 import { createMcpServer } from './mcp/handler.js'
+import { checkRateLimit } from './middleware/rateLimit.js'
 
 const fastify = Fastify({
   logger: {
@@ -26,6 +27,15 @@ fastify.all<{ Params: { token: string } }>(
   async (request, reply) => {
     const { token } = request.params
 
+    // Rate limit per token
+    const rateCheck = checkRateLimit(token)
+    if (!rateCheck.allowed) {
+      return reply.status(429).send({
+        error: 'Too many requests',
+        retry_after_ms: rateCheck.retryAfterMs,
+      })
+    }
+
     // Validate service token
     const serviceData = await getServiceByToken(token)
     if (!serviceData) {
@@ -33,7 +43,11 @@ fastify.all<{ Params: { token: string } }>(
     }
 
     // Create a new MCP server for this connection
-    const mcpServer = await createMcpServer(serviceData)
+    const callerIp = (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+      ?? request.ip
+      ?? undefined
+    const callerUserAgent = request.headers['user-agent'] as string | undefined
+    const mcpServer = await createMcpServer(serviceData, { ip: callerIp, userAgent: callerUserAgent })
 
     // Create stateless transport (one per request)
     const transport = new StreamableHTTPServerTransport({

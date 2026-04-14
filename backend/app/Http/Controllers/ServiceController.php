@@ -12,6 +12,7 @@ use App\Models\Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
@@ -59,6 +60,17 @@ class ServiceController extends Controller
         $service->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function regenerateToken(Request $request, Service $service): JsonResponse
+    {
+        $this->authorizeTeamOwnership($request, $service);
+
+        $service->update([
+            'mcp_url_token' => Str::random(64),
+        ]);
+
+        return response()->json(['data' => new ServiceResource($service->fresh())]);
     }
 
     private function authorizeTeamOwnership(Request $request, Service $service): void

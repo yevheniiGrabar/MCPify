@@ -60,6 +60,52 @@ class ServiceConnectorController extends Controller
         return response()->json(['data' => new McpToolResource($tool)], 201);
     }
 
+    public function updateAuth(Request $request, Service $service): JsonResponse
+    {
+        $this->authorizeTeamOwnership($request, $service);
+
+        $request->validate([
+            'auth_type' => 'required|in:bearer,api_key,basic,none',
+            'auth_config' => 'nullable|array',
+        ]);
+
+        $apiConfig = $service->apiConfig;
+        if (! $apiConfig) {
+            $apiConfig = $service->apiConfig()->create([
+                'type' => 'manual',
+                'auth_type' => $request->input('auth_type'),
+                'auth_config' => $request->input('auth_config'),
+            ]);
+        } else {
+            $apiConfig->update([
+                'auth_type' => $request->input('auth_type'),
+                'auth_config' => $request->input('auth_config'),
+            ]);
+        }
+
+        return response()->json([
+            'data' => [
+                'auth_type' => $apiConfig->auth_type,
+                'has_credentials' => $apiConfig->auth_config !== null,
+            ],
+        ]);
+    }
+
+    public function getAuth(Request $request, Service $service): JsonResponse
+    {
+        $this->authorizeTeamOwnership($request, $service);
+
+        $apiConfig = $service->apiConfig;
+
+        return response()->json([
+            'data' => [
+                'auth_type' => $apiConfig?->auth_type ?? 'none',
+                'has_credentials' => $apiConfig?->auth_config !== null,
+                'base_url' => $apiConfig?->base_url,
+            ],
+        ]);
+    }
+
     private function authorizeTeamOwnership(Request $request, Service $service): void
     {
         if ($service->team_id !== $request->user()->current_team_id) {

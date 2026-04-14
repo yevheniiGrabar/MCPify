@@ -78,6 +78,20 @@ export function useUpdateService(id: number) {
   })
 }
 
+export function useRegenerateToken(id: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await client.post(`/api/v1/services/${id}/regenerate-token`)
+      return ServiceResponseSchema.parse(data).data
+    },
+    onSuccess: (service) => {
+      queryClient.setQueryData(['services', id], service)
+      queryClient.invalidateQueries({ queryKey: ['services'] })
+    },
+  })
+}
+
 export function useDeleteService() {
   const queryClient = useQueryClient()
   return useMutation({

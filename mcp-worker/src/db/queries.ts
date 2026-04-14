@@ -1,5 +1,8 @@
 import { query } from './client.js'
 
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:8000'
+const WORKER_SECRET = process.env.WORKER_SECRET ?? 'secret_key_here'
+
 interface ServiceRow {
   id: number
   uuid: string
@@ -61,9 +64,28 @@ export async function getServiceByToken(token: string): Promise<ServiceWithConfi
     [service.id]
   )
 
+  const apiConfig = configResult.rows[0] ?? null
+
+  // Fetch decrypted auth_config from Laravel backend
+  if (apiConfig?.auth_config) {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/v1/internal/service-config/${token}`,
+        { headers: { 'X-Worker-Secret': WORKER_SECRET } }
+      )
+      if (response.ok) {
+        const json = await response.json() as { data: { auth_type: string | null; auth_config: Record<string, unknown> | null } }
+        apiConfig.auth_type = json.data.auth_type
+        apiConfig.auth_config = json.data.auth_config ? JSON.stringify(json.data.auth_config) : null
+      }
+    } catch {
+      // Fall back to raw DB value (may be encrypted and unusable)
+    }
+  }
+
   return {
     service,
-    apiConfig: configResult.rows[0] ?? null,
+    apiConfig,
   }
 }
 
@@ -99,12 +121,14 @@ export async function logToolCall(
   input: Record<string, unknown>,
   output: string | null,
   status: 'success' | 'error',
-  durationMs: number
+  durationMs: number,
+  callerIp?: string,
+  callerUserAgent?: string
 ): Promise<void> {
   const responseStatus = status === 'success' ? 200 : 500
   await query(
-    `INSERT INTO tool_calls (tool_id, service_id, input_params, response_status, error_message, duration_ms, called_at, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), NOW())`,
+    `INSERT INTO tool_calls (tool_id, service_id, input_params, response_status, error_message, duration_ms, caller_ip, caller_user_agent, called_at, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW(), NOW())`,
     [
       toolId,
       serviceId,
@@ -112,6 +136,8 @@ export async function logToolCall(
       responseStatus,
       status === 'error' ? output : null,
       durationMs,
+      callerIp ?? null,
+      callerUserAgent ?? null,
     ]
   )
 }

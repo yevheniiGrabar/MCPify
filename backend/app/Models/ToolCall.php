@@ -20,6 +20,8 @@ class ToolCall extends Model
         'input_params',
         'response_status',
         'error_message',
+        'caller_ip',
+        'caller_user_agent',
     ];
 
     protected function casts(): array

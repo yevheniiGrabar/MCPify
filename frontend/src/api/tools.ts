@@ -77,6 +77,42 @@ export function useDeleteTool() {
   })
 }
 
+const AuthConfigSchema = z.object({
+  data: z.object({
+    auth_type: z.string(),
+    has_credentials: z.boolean(),
+    base_url: z.string().nullable().optional(),
+  }),
+})
+
+export type AuthConfigInfo = z.infer<typeof AuthConfigSchema>['data']
+
+export function useServiceAuth(serviceId: number) {
+  return useQuery({
+    queryKey: ['service-auth', serviceId],
+    queryFn: async () => {
+      const { data } = await client.get(`/api/v1/services/${serviceId}/auth`)
+      return AuthConfigSchema.parse(data).data
+    },
+  })
+}
+
+export function useUpdateServiceAuth(serviceId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: {
+      auth_type: string
+      auth_config?: Record<string, unknown> | null
+    }) => {
+      const { data } = await client.put(`/api/v1/services/${serviceId}/auth`, payload)
+      return AuthConfigSchema.parse(data).data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-auth', serviceId] })
+    },
+  })
+}
+
 export function useConnectOpenApi(serviceId: number) {
   const queryClient = useQueryClient()
   return useMutation({

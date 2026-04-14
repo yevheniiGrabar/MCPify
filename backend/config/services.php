@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'mcp_worker' => [
+        'url' => env('MCP_WORKER_URL', 'http://localhost:3001'),
+        'secret' => env('MCP_WORKER_SECRET', 'secret_key_here'),
+    ],
+
 ];

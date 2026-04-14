@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Internal\WorkerController;
 use App\Http\Controllers\ServiceConnectorController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ToolController;
@@ -31,10 +32,13 @@ Route::prefix('v1')->group(function (): void {
     // Protected routes
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::apiResource('services', ServiceController::class);
+        Route::post('services/{service}/regenerate-token', [ServiceController::class, 'regenerateToken']);
 
         // Service connectors
         Route::post('services/{service}/connect/openapi', [ServiceConnectorController::class, 'connectOpenApi']);
         Route::post('services/{service}/connect/manual', [ServiceConnectorController::class, 'connectManual']);
+        Route::get('services/{service}/auth', [ServiceConnectorController::class, 'getAuth']);
+        Route::put('services/{service}/auth', [ServiceConnectorController::class, 'updateAuth']);
 
         // Tools
         Route::get('services/{service}/tools', [ToolController::class, 'index']);
@@ -43,5 +47,11 @@ Route::prefix('v1')->group(function (): void {
 
         // Analytics
         Route::get('analytics/summary', [AnalyticsController::class, 'summary']);
+        Route::get('services/{service}/audit-log', [AnalyticsController::class, 'auditLog']);
+    });
+
+    // Internal routes (worker-to-backend, secured by X-Worker-Secret header)
+    Route::prefix('internal')->group(function (): void {
+        Route::get('service-config/{token}', [WorkerController::class, 'serviceConfig']);
     });
 });

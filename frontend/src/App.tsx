@@ -5,6 +5,7 @@ import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '
 import { BillingPage } from '@/pages/billing'
 import { DashboardPage } from '@/pages/dashboard'
 import {
+  AuditLogPage,
   ConnectServicePage,
   CreateServicePage,
   ServiceDetailPage,
@@ -31,6 +32,7 @@ export function App() {
           <Route path="/services/:id" element={<ServiceDetailPage />} />
           <Route path="/services/:id/connect" element={<ConnectServicePage />} />
           <Route path="/services/:id/tools" element={<ToolsPage />} />
+          <Route path="/services/:id/audit-log" element={<AuditLogPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/billing" element={<BillingPage />} />

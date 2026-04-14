@@ -12,7 +12,12 @@ import { executeTool } from './executor.js'
  * Creates a configured MCP Server for a specific service.
  * Each connection gets its own server instance with tools loaded from DB.
  */
-export async function createMcpServer(serviceData: ServiceWithConfig): Promise<McpServer> {
+export interface CallerInfo {
+  ip?: string
+  userAgent?: string
+}
+
+export async function createMcpServer(serviceData: ServiceWithConfig, caller?: CallerInfo): Promise<McpServer> {
   const { service, apiConfig } = serviceData
 
   const server = new McpServer(
@@ -66,11 +71,21 @@ export async function createMcpServer(serviceData: ServiceWithConfig): Promise<M
       }
     }
 
+    // For destructive tools, add confirmation parameter and warning to description
+    if (tool.is_destructive) {
+      zodShape['confirm_destructive'] = z.boolean()
+        .describe('Must be set to true to confirm this destructive operation')
+    }
+
+    const description = tool.is_destructive
+      ? `[DESTRUCTIVE] ${tool.description ?? `${tool.http_method} ${tool.endpoint_path}`}. Requires confirm_destructive=true.`
+      : (tool.description ?? `${tool.http_method} ${tool.endpoint_path}`)
+
     server.registerTool(
       tool.name,
       {
         title: tool.name,
-        description: tool.description ?? `${tool.http_method} ${tool.endpoint_path}`,
+        description,
         inputSchema: Object.keys(zodShape).length > 0 ? zodShape : undefined,
         annotations: {
           readOnlyHint: !tool.is_destructive,
@@ -79,6 +94,21 @@ export async function createMcpServer(serviceData: ServiceWithConfig): Promise<M
       },
       async (args: Record<string, unknown>) => {
         const start = Date.now()
+
+        // Destructive tool confirmation check
+        if (tool.is_destructive && args.confirm_destructive !== true) {
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `This is a destructive operation (${tool.http_method} ${tool.endpoint_path}). Set confirm_destructive=true to proceed.`,
+            }],
+            isError: true,
+          }
+        }
+
+        // Remove the confirmation flag before forwarding to the API
+        const forwardArgs = { ...args }
+        delete forwardArgs.confirm_destructive
 
         // Re-fetch tool to ensure it's still enabled
         const currentTool = await getToolByName(service.id, tool.name)
@@ -90,7 +120,7 @@ export async function createMcpServer(serviceData: ServiceWithConfig): Promise<M
         }
 
         try {
-          const result = await executeTool(currentTool, args, {
+          const result = await executeTool(currentTool, forwardArgs, {
             base_url: apiConfig?.base_url ?? null,
             auth_type: apiConfig?.auth_type ?? null,
             auth_config: apiConfig?.auth_config ?? null,
@@ -103,10 +133,12 @@ export async function createMcpServer(serviceData: ServiceWithConfig): Promise<M
           await logToolCall(
             currentTool.id,
             service.id,
-            args,
+            forwardArgs,
             result.body,
             isError ? 'error' : 'success',
-            durationMs
+            durationMs,
+            caller?.ip,
+            caller?.userAgent
           ).catch(() => {
             // Don't fail the tool call if logging fails
           })
@@ -122,10 +154,12 @@ export async function createMcpServer(serviceData: ServiceWithConfig): Promise<M
           await logToolCall(
             currentTool.id,
             service.id,
-            args,
+            forwardArgs,
             message,
             'error',
-            durationMs
+            durationMs,
+            caller?.ip,
+            caller?.userAgent
           ).catch(() => {})
 
           return {
