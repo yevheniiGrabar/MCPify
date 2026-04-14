@@ -1,4 +1,5 @@
 export * from './auth'
 export * from './services'
 export * from './tools'
+export * from './analytics'
 export { default as client } from './client'

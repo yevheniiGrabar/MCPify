@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ServiceConnectorController;
 use App\Http\Controllers\ServiceController;
@@ -13,10 +14,17 @@ Route::prefix('v1')->group(function (): void {
     Route::prefix('auth')->group(function (): void {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
+        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('reset-password', [AuthController::class, 'resetPassword']);
+        Route::get('verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+            ->middleware('signed')
+            ->name('verification.verify');
 
         Route::middleware('auth:sanctum')->group(function (): void {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
+            Route::post('email/resend', [AuthController::class, 'sendVerificationEmail'])
+                ->middleware('throttle:6,1');
         });
     });
 
@@ -32,5 +40,8 @@ Route::prefix('v1')->group(function (): void {
         Route::get('services/{service}/tools', [ToolController::class, 'index']);
         Route::patch('tools/{tool}', [ToolController::class, 'update']);
         Route::delete('tools/{tool}', [ToolController::class, 'destroy']);
+
+        // Analytics
+        Route::get('analytics/summary', [AnalyticsController::class, 'summary']);
     });
 });

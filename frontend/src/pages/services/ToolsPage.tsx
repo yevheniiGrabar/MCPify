@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import {
   Table,
@@ -28,7 +29,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { ArrowLeft, Plus, Trash2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, AlertTriangle, Pencil, Check, X } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -40,12 +42,20 @@ const methodColors: Record<string, string> = {
   DELETE: 'bg-red-100 text-red-700',
 }
 
+interface EditState {
+  toolId: number
+  field: 'name' | 'description'
+  value: string
+}
+
 export function ToolsPage() {
   const { id } = useParams<{ id: string }>()
   const serviceId = Number(id)
   const { data: tools = [], isLoading } = useTools(serviceId)
   const updateTool = useUpdateTool()
   const deleteTool = useDeleteTool()
+  const [editing, setEditing] = useState<EditState | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleToggle = (toolId: number, currentEnabled: boolean) => {
     updateTool.mutate(
@@ -65,6 +75,37 @@ export function ToolsPage() {
         onError: () => toast.error('Failed to delete tool'),
       }
     )
+  }
+
+  const startEdit = (toolId: number, field: 'name' | 'description', currentValue: string) => {
+    setEditing({ toolId, field, value: currentValue })
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  const saveEdit = () => {
+    if (!editing) return
+    const trimmed = editing.value.trim()
+    if (editing.field === 'name' && trimmed === '') {
+      toast.error('Name cannot be empty')
+      return
+    }
+    updateTool.mutate(
+      { toolId: editing.toolId, payload: { [editing.field]: trimmed || null } },
+      {
+        onSuccess: () => {
+          toast.success('Updated')
+          setEditing(null)
+        },
+        onError: () => toast.error('Failed to update'),
+      }
+    )
+  }
+
+  const cancelEdit = () => setEditing(null)
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') saveEdit()
+    if (e.key === 'Escape') cancelEdit()
   }
 
   if (isLoading) {
@@ -130,11 +171,56 @@ export function ToolsPage() {
                 {tools.map((tool) => (
                   <TableRow key={tool.id}>
                     <TableCell>
-                      <div>
-                        <span className="font-medium">{tool.name}</span>
-                        {tool.description && (
-                          <p className="text-xs text-gray-500 mt-0.5 max-w-xs truncate">
-                            {tool.description}
+                      <div className="space-y-0.5">
+                        {editing?.toolId === tool.id && editing.field === 'name' ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              ref={inputRef}
+                              value={editing.value}
+                              onChange={(e) => setEditing({ ...editing, value: e.target.value })}
+                              onKeyDown={handleKeyDown}
+                              className="h-7 text-sm"
+                            />
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={saveEdit}>
+                              <Check className="w-3 h-3 text-green-600" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={cancelEdit}>
+                              <X className="w-3 h-3 text-gray-400" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <span
+                            className="font-medium cursor-pointer hover:text-indigo-600 inline-flex items-center gap-1 group"
+                            onClick={() => startEdit(tool.id, 'name', tool.name)}
+                          >
+                            {tool.name}
+                            <Pencil className="w-3 h-3 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </span>
+                        )}
+                        {editing?.toolId === tool.id && editing.field === 'description' ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              ref={inputRef}
+                              value={editing.value}
+                              onChange={(e) => setEditing({ ...editing, value: e.target.value })}
+                              onKeyDown={handleKeyDown}
+                              className="h-6 text-xs"
+                              placeholder="Add description..."
+                            />
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={saveEdit}>
+                              <Check className="w-3 h-3 text-green-600" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={cancelEdit}>
+                              <X className="w-3 h-3 text-gray-400" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <p
+                            className="text-xs text-gray-500 max-w-xs truncate cursor-pointer hover:text-indigo-500 group inline-flex items-center gap-1"
+                            onClick={() => startEdit(tool.id, 'description', tool.description ?? '')}
+                          >
+                            {tool.description || 'Add description...'}
+                            <Pencil className="w-2.5 h-2.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </p>
                         )}
                       </div>

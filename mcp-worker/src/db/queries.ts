@@ -101,9 +101,17 @@ export async function logToolCall(
   status: 'success' | 'error',
   durationMs: number
 ): Promise<void> {
+  const responseStatus = status === 'success' ? 200 : 500
   await query(
-    `INSERT INTO tool_calls (tool_id, service_id, input, output, status, duration_ms, called_at, created_at, updated_at)
+    `INSERT INTO tool_calls (tool_id, service_id, input_params, response_status, error_message, duration_ms, called_at, created_at, updated_at)
      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW(), NOW())`,
-    [toolId, serviceId, JSON.stringify(input), output, status, durationMs]
+    [
+      toolId,
+      serviceId,
+      JSON.stringify(input),
+      responseStatus,
+      status === 'error' ? output : null,
+      durationMs,
+    ]
   )
 }

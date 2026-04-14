@@ -1,7 +1,7 @@
 import { AppLayout } from '@/components/layout/AppLayout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { AnalyticsPage } from '@/pages/analytics'
-import { LoginPage, RegisterPage } from '@/pages/auth'
+import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '@/pages/auth'
 import { BillingPage } from '@/pages/billing'
 import { DashboardPage } from '@/pages/dashboard'
 import {
@@ -19,6 +19,8 @@ export function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>

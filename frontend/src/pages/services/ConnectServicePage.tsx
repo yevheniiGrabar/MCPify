@@ -24,9 +24,10 @@ import {
   CheckCircle2,
   FileJson,
   Globe,
+  Upload,
   Wrench,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -64,6 +65,7 @@ export function ConnectServicePage() {
 
   const connectOpenApi = useConnectOpenApi(serviceId)
   const connectManual = useConnectManual(serviceId)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const openApiForm = useForm<OpenApiFormData>({
     resolver: zodResolver(openApiSchema),
@@ -73,6 +75,20 @@ export function ConnectServicePage() {
     resolver: zodResolver(manualSchema),
     defaultValues: { http_method: 'GET' },
   })
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = event.target?.result as string
+      openApiForm.setValue('spec_json', content)
+      toast.success(`Loaded ${file.name}`)
+    }
+    reader.onerror = () => toast.error('Failed to read file')
+    reader.readAsText(file)
+  }
 
   const onSubmitOpenApi = (data: OpenApiFormData) => {
     connectOpenApi.mutate(
@@ -198,7 +214,32 @@ export function ConnectServicePage() {
 
               <div className="flex items-center gap-4 text-sm text-gray-400">
                 <div className="h-px flex-1 bg-gray-200" />
-                or
+                or upload a file
+                <div className="h-px flex-1 bg-gray-200" />
+              </div>
+
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json,.yaml,.yml"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload .json or .yaml file
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <div className="h-px flex-1 bg-gray-200" />
+                or paste directly
                 <div className="h-px flex-1 bg-gray-200" />
               </div>
 

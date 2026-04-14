@@ -1,10 +1,13 @@
+import { useAnalyticsSummary } from '@/api/analytics'
 import { useServices } from '@/api/services'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Activity, BarChart3, Plug, Users } from 'lucide-react'
+import { Activity, BarChart3, Plug, Wrench } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export function DashboardPage() {
   const { data: services = [] } = useServices()
+  const { data: analytics } = useAnalyticsSummary()
   const activeServices = services.filter((s) => s.status === 'active').length
 
   return (
@@ -31,18 +34,22 @@ export function DashboardPage() {
             <Activity className="w-4 h-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-gray-500 mt-1">This month</p>
+            <div className="text-2xl font-bold">{analytics?.month_calls ?? 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {analytics?.total_calls ?? 0} total
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Connected Users</CardTitle>
-            <Users className="w-4 h-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-gray-500">Tools</CardTitle>
+            <Wrench className="w-4 h-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-gray-500 mt-1">Unique users</p>
+            <div className="text-2xl font-bold">{analytics?.enabled_tools ?? 0}</div>
+            <p className="text-xs text-gray-500 mt-1">
+              {analytics?.total_tools ?? 0} total
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -51,8 +58,10 @@ export function DashboardPage() {
             <BarChart3 className="w-4 h-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">—</div>
-            <p className="text-xs text-gray-500 mt-1">ms</p>
+            <div className="text-2xl font-bold">
+              {analytics?.avg_response_ms != null ? `${analytics.avg_response_ms}` : '\u2014'}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">ms this month</p>
           </CardContent>
         </Card>
       </div>
@@ -65,9 +74,10 @@ export function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {services.map((service) => (
-                <div
+                <Link
                   key={service.id}
-                  className="flex items-center justify-between py-2 border-b last:border-0"
+                  to={`/services/${service.id}`}
+                  className="flex items-center justify-between py-2 border-b last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
                 >
                   <div>
                     <p className="font-medium text-sm">{service.name}</p>
@@ -81,7 +91,7 @@ export function DashboardPage() {
                   >
                     {service.status}
                   </Badge>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>

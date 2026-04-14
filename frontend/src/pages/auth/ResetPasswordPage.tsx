@@ -1,4 +1,3 @@
-import { useLogin } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -10,52 +9,53 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plug } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import client from '@/api/client'
 
-const schema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(1, 'Password is required'),
-})
+const schema = z
+  .object({
+    email: z.string().email('Invalid email'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: 'Passwords do not match',
+    path: ['password_confirmation'],
+  })
 
 type FormData = z.infer<typeof schema>
 
-export function LoginPage() {
+export function ResetPasswordPage() {
   const navigate = useNavigate()
-  const login = useLogin()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token') ?? ''
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
-  const onSubmit = (data: FormData) => {
-    login.mutate(data, {
-      onSuccess: () => void navigate('/dashboard'),
-      onError: () => toast.error('Invalid email or password'),
-    })
+  const onSubmit = async (data: FormData) => {
+    try {
+      await client.post('/api/v1/auth/reset-password', { ...data, token })
+      toast.success('Password reset successfully')
+      void navigate('/login')
+    } catch {
+      toast.error('Unable to reset password. The link may have expired.')
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <Plug className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-2xl text-gray-900">MCPify</span>
-          </div>
-        </div>
-
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
+            <CardTitle>Set new password</CardTitle>
+            <CardDescription>Enter your new password below</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -72,7 +72,7 @@ export function LoginPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">New Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -83,23 +83,29 @@ export function LoginPage() {
                   <p className="text-sm text-red-500">{errors.password.message}</p>
                 )}
               </div>
-              <div className="flex justify-end">
-                <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
-                  Forgot password?
-                </Link>
+              <div className="space-y-2">
+                <Label htmlFor="password_confirmation">Confirm Password</Label>
+                <Input
+                  id="password_confirmation"
+                  type="password"
+                  placeholder="••••••••"
+                  {...register('password_confirmation')}
+                />
+                {errors.password_confirmation && (
+                  <p className="text-sm text-red-500">{errors.password_confirmation.message}</p>
+                )}
               </div>
               <Button
                 type="submit"
                 className="w-full bg-indigo-600 hover:bg-indigo-700"
-                disabled={login.isPending}
+                disabled={isSubmitting}
               >
-                {login.isPending ? 'Signing in...' : 'Sign in'}
+                {isSubmitting ? 'Resetting...' : 'Reset password'}
               </Button>
             </form>
             <p className="mt-4 text-center text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link to="/register" className="text-indigo-600 hover:underline font-medium">
-                Sign up
+              <Link to="/login" className="text-indigo-600 hover:underline font-medium">
+                Back to login
               </Link>
             </p>
           </CardContent>
