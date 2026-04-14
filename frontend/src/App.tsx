@@ -4,7 +4,13 @@ import { AnalyticsPage } from '@/pages/analytics'
 import { LoginPage, RegisterPage } from '@/pages/auth'
 import { BillingPage } from '@/pages/billing'
 import { DashboardPage } from '@/pages/dashboard'
-import { CreateServicePage, ServiceDetailPage, ServicesPage } from '@/pages/services'
+import {
+  ConnectServicePage,
+  CreateServicePage,
+  ServiceDetailPage,
+  ServicesPage,
+  ToolsPage,
+} from '@/pages/services'
 import { SettingsPage } from '@/pages/settings'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
@@ -21,6 +27,8 @@ export function App() {
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/services/new" element={<CreateServicePage />} />
           <Route path="/services/:id" element={<ServiceDetailPage />} />
+          <Route path="/services/:id/connect" element={<ConnectServicePage />} />
+          <Route path="/services/:id/tools" element={<ToolsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/billing" element={<BillingPage />} />

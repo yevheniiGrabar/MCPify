@@ -1,3 +1,5 @@
 export * from './ServicesPage'
 export * from './CreateServicePage'
 export * from './ServiceDetailPage'
+export * from './ConnectServicePage'
+export * from './ToolsPage'

@@ -1,4 +1,5 @@
 import { useService } from '@/api/services'
+import { useTools } from '@/api/tools'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -8,13 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { ArrowLeft, Copy } from 'lucide-react'
+import { ArrowLeft, Copy, Plug, Wrench } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 export function ServiceDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: service, isLoading } = useService(Number(id))
+  const serviceId = Number(id)
+  const { data: service, isLoading } = useService(serviceId)
+  const { data: tools = [] } = useTools(serviceId)
 
   if (isLoading) {
     return (
@@ -78,6 +81,48 @@ export function ServiceDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plug className="w-5 h-5 text-indigo-600" />
+              API Connection
+            </CardTitle>
+            <CardDescription>
+              {tools.length > 0
+                ? `${tools.length} tools imported`
+                : 'Connect your API to generate MCP tools'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="bg-indigo-600 hover:bg-indigo-700 w-full" asChild>
+              <Link to={`/services/${id}/connect`}>
+                {tools.length > 0 ? 'Re-import Tools' : 'Connect API'}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wrench className="w-5 h-5 text-indigo-600" />
+              Tools
+            </CardTitle>
+            <CardDescription>
+              {tools.length > 0
+                ? `${tools.filter((t) => t.is_enabled).length} enabled / ${tools.length} total`
+                : 'No tools configured yet'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full" asChild>
+              <Link to={`/services/${id}/tools`}>Manage Tools</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
