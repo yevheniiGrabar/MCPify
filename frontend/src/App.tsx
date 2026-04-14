@@ -1,0 +1,33 @@
+import { AppLayout } from '@/components/layout/AppLayout'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { AnalyticsPage } from '@/pages/analytics'
+import { LoginPage, RegisterPage } from '@/pages/auth'
+import { BillingPage } from '@/pages/billing'
+import { DashboardPage } from '@/pages/dashboard'
+import { CreateServicePage, ServiceDetailPage, ServicesPage } from '@/pages/services'
+import { SettingsPage } from '@/pages/settings'
+import { Navigate, Route, Routes } from 'react-router-dom'
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/new" element={<CreateServicePage />} />
+          <Route path="/services/:id" element={<ServiceDetailPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/billing" element={<BillingPage />} />
+        </Route>
+      </Route>
+    </Routes>
+  )
+}
+
+export default App
