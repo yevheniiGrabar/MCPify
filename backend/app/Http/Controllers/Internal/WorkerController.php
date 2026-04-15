@@ -9,22 +9,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\Team;
 use App\Notifications\UsageLimitWarningNotification;
+use App\Services\PlanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class WorkerController extends Controller
 {
-    private const PLAN_CALL_LIMITS = [
-        'free' => 1_000,
-        'starter' => 10_000,
-        'growth' => 100_000,
-        'business' => 1_000_000,
-    ];
+    public function __construct(
+        private readonly PlanService $planService,
+    ) {}
 
     public function serviceConfig(Request $request, string $token): JsonResponse
     {
-        // Validate worker secret
         $workerSecret = config('services.mcp_worker.secret');
         if ($request->header('X-Worker-Secret') !== $workerSecret) {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -48,14 +45,14 @@ class WorkerController extends Controller
                 'service_name' => $service->name,
                 'base_url' => $apiConfig?->base_url,
                 'auth_type' => $apiConfig?->auth_type,
-                'auth_config' => $apiConfig?->auth_config, // decrypted via accessor
+                'auth_config' => $apiConfig?->auth_config,
             ],
         ]);
     }
 
     /**
      * POST /api/v1/internal/tool-call
-     * Called by MCP worker after each tool invocation to record the call.
+     * Increments the monthly call counter and sends usage warnings.
      */
     public function recordToolCall(Request $request): JsonResponse
     {
@@ -64,35 +61,29 @@ class WorkerController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $serviceId = $request->input('service_id');
-        $service = Service::with('team')->find($serviceId);
+        $service = Service::with('team')->find($request->input('service_id'));
 
         if (! $service || ! $service->team) {
             return response()->json(['error' => 'Service not found'], 404);
         }
 
         $team = $service->team;
+        $plan = $team->plan ?? Plan::Free;
+        $maxCalls = $this->planService->callsLimit($plan);
+
         $monthKey = now()->format('Y-m');
         $cacheKey = "calls:{$team->id}:{$monthKey}";
 
-        // Increment the call counter (expires at end of month)
-        $secondsUntilEndOfMonth = now()->endOfMonth()->diffInSeconds(now());
         $currentCalls = (int) Cache::increment($cacheKey);
 
-        // Set TTL on first increment
+        // Set TTL only on the first increment
         if ($currentCalls === 1) {
-            Cache::put($cacheKey, 1, (int) $secondsUntilEndOfMonth);
+            Cache::put($cacheKey, 1, (int) now()->endOfMonth()->diffInSeconds(now()));
         }
 
-        // Check limits and send warnings
-        $plan = $team->plan ?? Plan::Free;
-        $maxCalls = self::PLAN_CALL_LIMITS[$plan->value] ?? 1_000;
         $percentage = (int) round(($currentCalls / $maxCalls) * 100);
-
-        // Send warning at 80% and 100% thresholds (only once per threshold per month)
         $this->checkAndNotifyUsage($team, 'calls', $currentCalls, $maxCalls, $percentage, $monthKey);
 
-        // Return whether the call is allowed (within limits or grace period)
         $isAllowed = $currentCalls <= $maxCalls || $this->isInGracePeriod($team);
 
         return response()->json([
@@ -115,9 +106,7 @@ class WorkerController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $service = Service::where('mcp_url_token', $token)
-            ->with('team')
-            ->first();
+        $service = Service::where('mcp_url_token', $token)->with('team')->first();
 
         if (! $service || ! $service->team) {
             return response()->json(['error' => 'Not found'], 404);
@@ -125,15 +114,12 @@ class WorkerController extends Controller
 
         $team = $service->team;
         $plan = $team->plan ?? Plan::Free;
-        $maxCalls = self::PLAN_CALL_LIMITS[$plan->value] ?? 1_000;
-        $monthKey = now()->format('Y-m');
-        $currentCalls = (int) Cache::get("calls:{$team->id}:{$monthKey}", 0);
-
-        $allowed = $currentCalls < $maxCalls || $this->isInGracePeriod($team);
+        $maxCalls = $this->planService->callsLimit($plan);
+        $currentCalls = (int) Cache::get("calls:{$team->id}:" . now()->format('Y-m'), 0);
 
         return response()->json([
             'data' => [
-                'allowed' => $allowed,
+                'allowed' => $currentCalls < $maxCalls || $this->isInGracePeriod($team),
                 'calls_used' => $currentCalls,
                 'calls_limit' => $maxCalls,
                 'plan' => $plan->value,
@@ -155,9 +141,7 @@ class WorkerController extends Controller
             return;
         }
 
-        $thresholds = [80, 100];
-
-        foreach ($thresholds as $threshold) {
+        foreach ([80, 100] as $threshold) {
             if ($percentage >= $threshold) {
                 $notifKey = "usage_warning:{$team->id}:{$resource}:{$threshold}:{$monthKey}";
 

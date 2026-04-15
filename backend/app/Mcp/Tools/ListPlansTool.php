@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Services\PlanService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -17,53 +18,41 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 class ListPlansTool extends Tool
 {
+    public function __construct(
+        private readonly PlanService $planService,
+    ) {}
+
     public function handle(Request $request): Response
     {
-        return Response::text(<<<TEXT
-# MCPify Pricing Plans
+        $lines = ['# MCPify Pricing Plans', ''];
 
-## Free — $0/month (forever)
-- **Services:** 1
-- **Tool calls/month:** 1,000
-- **Auth:** Basic auth only
-- **Support:** Community
-- **Best for:** Personal projects, testing, evaluation
+        foreach ($this->planService->all() as $plan) {
+            $price = $plan['price'] > 0 ? "\${$plan['price']}/month" : '$0/month (forever)';
+            $servicesLimit = $plan['limits']['services'] ?? null;
+            $callsLimit = $plan['limits']['calls_per_month'];
 
-## Starter — $49/month
-- **Services:** 3
-- **Tool calls/month:** 10,000
-- **Auth:** All auth methods (Bearer, API Key, Basic)
-- **Analytics:** Basic
-- **Support:** Email
-- **Best for:** Indie developers, small projects
+            $servicesStr = $servicesLimit ? (string) $servicesLimit : 'Unlimited';
+            $callsStr = number_format($callsLimit);
 
-## Growth — $149/month ⭐ Most Popular
-- **Services:** 10
-- **Tool calls/month:** 100,000
-- **Auth:** All auth methods + custom configs
-- **Analytics:** Advanced (charts, CSV export, error logs)
-- **Support:** Priority email
-- **Extra:** Webhook notifications
-- **Best for:** Growing SaaS companies, teams
+            $popular = $plan['name'] === 'growth' ? ' ⭐ Most Popular' : '';
+            $lines[] = "## {$plan['display_name']} — {$price}{$popular}";
+            $lines[] = "- **Services:** {$servicesStr}";
+            $lines[] = "- **Tool calls/month:** {$callsStr}";
+            foreach ($plan['features'] as $feature) {
+                $lines[] = "- {$feature}";
+            }
+            $lines[] = '';
+        }
 
-## Business — $399/month
-- **Services:** Unlimited
-- **Tool calls/month:** 1,000,000
-- **Auth:** OAuth 2.0 support
-- **Analytics:** Full audit logging
-- **Support:** Dedicated
-- **Extra:** White-label MCP endpoints, SLA guarantee
-- **Best for:** Large companies, high-volume use cases
+        $lines[] = '---';
+        $lines[] = '## How to upgrade';
+        $lines[] = 'Visit https://mcpify.dev/billing and click "Upgrade" on the plan you want.';
+        $lines[] = '';
+        $lines[] = '## Overage policy';
+        $lines[] = 'Calls over the monthly limit are blocked until the next billing cycle or until you upgrade.';
+        $lines[] = 'A 3-day grace period applies after a failed payment.';
 
----
-
-## How to upgrade
-Visit https://mcpify.dev/billing and click "Upgrade" on the plan you want.
-
-## Overage policy
-Calls over the monthly limit are blocked until the next billing cycle or until you upgrade.
-A 3-day grace period applies after a failed payment.
-TEXT);
+        return Response::text(implode("\n", $lines));
     }
 
     public function schema(JsonSchema $schema): array
