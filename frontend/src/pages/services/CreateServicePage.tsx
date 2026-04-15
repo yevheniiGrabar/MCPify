@@ -2,13 +2,6 @@ import { useCreateService } from '@/api/services'
 import { useUsage } from '@/api/billing'
 import { UpgradePlanDialog } from '@/components/billing/UpgradePlanDialog'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -58,58 +51,74 @@ export function CreateServicePage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+        >
           <Link to="/services">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create Service</h1>
-          <p className="text-gray-500 mt-1">Set up a new MCP service</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Create Service</h1>
+          <p className="text-zinc-400 mt-1">Set up a new MCP service</p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Service Details</CardTitle>
-          <CardDescription>Basic information about your MCP service</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-xl border border-zinc-800 bg-surface-card relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/30 to-transparent" />
+        <div className="p-6">
+          <div className="mb-5">
+            <h2 className="text-base font-semibold text-white">Service Details</h2>
+            <p className="text-sm text-zinc-400 mt-0.5">Basic information about your MCP service</p>
+          </div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Service Name</Label>
-              <Input id="name" placeholder="My API Service" {...register('name')} />
+              <Label htmlFor="name" className="text-zinc-300 text-sm">Service Name</Label>
+              <Input
+                id="name"
+                placeholder="My API Service"
+                className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-brand-500"
+                {...register('name')}
+              />
               {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
+                <p className="text-sm text-red-400">{errors.name.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-zinc-300 text-sm">Description</Label>
               <Input
                 id="description"
                 placeholder="Brief description of what this service does"
+                className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-brand-500"
                 {...register('description')}
               />
               {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
+                <p className="text-sm text-red-400">{errors.description.message}</p>
               )}
             </div>
             <div className="flex gap-3 pt-2">
               <Button
                 type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/20"
                 disabled={createService.isPending}
               >
                 {createService.isPending ? 'Creating...' : 'Create Service'}
               </Button>
-              <Button variant="outline" asChild>
+              <Button
+                variant="outline"
+                asChild
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              >
                 <Link to="/services">Cancel</Link>
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <UpgradePlanDialog
         open={showUpgrade}

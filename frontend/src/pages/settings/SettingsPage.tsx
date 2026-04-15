@@ -1,9 +1,7 @@
 import { useCurrentUser } from '@/api/auth'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +22,6 @@ import client from '@/api/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
-/* ─── Schemas ─── */
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email'),
@@ -44,28 +41,47 @@ const passwordSchema = z
 type ProfileData = z.infer<typeof profileSchema>
 type PasswordData = z.infer<typeof passwordSchema>
 
+const inputCls = 'bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-brand-500'
+const labelCls = 'text-zinc-300 text-sm'
+
 export function SettingsPage() {
   const { data: user } = useCurrentUser()
 
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 mt-1">Manage your account and preferences</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>
+        <p className="text-zinc-400 mt-1">Manage your account and preferences</p>
       </div>
 
       <ProfileSection user={user} />
-      <Separator />
       <PasswordSection />
-      <Separator />
       <TeamSection user={user} />
-      <Separator />
       <DangerZone />
     </div>
   )
 }
 
-/* ─── Profile ─── */
+function SectionCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-surface-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-6 py-4 border-b border-zinc-800">
+        {icon}
+        <h2 className="text-sm font-semibold text-white">{title}</h2>
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  )
+}
+
 function ProfileSection({ user }: { user: ReturnType<typeof useCurrentUser>['data'] }) {
   const queryClient = useQueryClient()
   const [saving, setSaving] = useState(false)
@@ -96,44 +112,35 @@ function ProfileSection({ user }: { user: ReturnType<typeof useCurrentUser>['dat
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <User className="w-4 h-4 text-gray-400" />
-          <CardTitle className="text-base">Profile</CardTitle>
+    <SectionCard icon={<User className="w-4 h-4 text-brand-400" />} title="Profile">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name" className={labelCls}>Name</Label>
+            <Input id="name" className={inputCls} {...register('name')} />
+            {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email" className={labelCls}>Email</Label>
+            <Input id="email" type="email" className={inputCls} {...register('email')} />
+            {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" {...register('name')} />
-              {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...register('email')} />
-              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!isDirty || saving}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white gap-1.5"
-            >
-              {saving ? 'Saving...' : <><Check className="w-3.5 h-3.5" /> Save changes</>}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            size="sm"
+            disabled={!isDirty || saving}
+            className="bg-brand-600 hover:bg-brand-500 text-white gap-1.5 shadow-lg shadow-brand-600/20"
+          >
+            {saving ? 'Saving...' : <><Check className="w-3.5 h-3.5" /> Save changes</>}
+          </Button>
+        </div>
+      </form>
+    </SectionCard>
   )
 }
 
-/* ─── Password ─── */
 function PasswordSection() {
   const [saving, setSaving] = useState(false)
 
@@ -158,80 +165,92 @@ function PasswordSection() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Key className="w-4 h-4 text-gray-400" />
-          <CardTitle className="text-base">Change Password</CardTitle>
+    <SectionCard icon={<Key className="w-4 h-4 text-amber-400" />} title="Change Password">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="current_password" className={labelCls}>Current Password</Label>
+          <Input
+            id="current_password"
+            type="password"
+            placeholder="••••••••"
+            className={inputCls}
+            {...register('current_password')}
+          />
+          {errors.current_password && (
+            <p className="text-xs text-red-400">{errors.current_password.message}</p>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="current_password">Current Password</Label>
-            <Input id="current_password" type="password" placeholder="••••••••" {...register('current_password')} />
-            {errors.current_password && <p className="text-xs text-red-500">{errors.current_password.message}</p>}
+            <Label htmlFor="new_password" className={labelCls}>New Password</Label>
+            <Input
+              id="new_password"
+              type="password"
+              placeholder="••••••••"
+              className={inputCls}
+              {...register('password')}
+            />
+            {errors.password && (
+              <p className="text-xs text-red-400">{errors.password.message}</p>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="new_password">New Password</Label>
-              <Input id="new_password" type="password" placeholder="••••••••" {...register('password')} />
-              {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm_password">Confirm New Password</Label>
-              <Input id="confirm_password" type="password" placeholder="••••••••" {...register('password_confirmation')} />
-              {errors.password_confirmation && <p className="text-xs text-red-500">{errors.password_confirmation.message}</p>}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm_password" className={labelCls}>Confirm New Password</Label>
+            <Input
+              id="confirm_password"
+              type="password"
+              placeholder="••••••••"
+              className={inputCls}
+              {...register('password_confirmation')}
+            />
+            {errors.password_confirmation && (
+              <p className="text-xs text-red-400">{errors.password_confirmation.message}</p>
+            )}
           </div>
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              size="sm"
-              variant="outline"
-              disabled={saving}
-            >
-              {saving ? 'Updating...' : 'Update password'}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  )
-}
-
-/* ─── Team ─── */
-function TeamSection({ user }: { user: ReturnType<typeof useCurrentUser>['data'] }) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-gray-400" />
-          <CardTitle className="text-base">Team</CardTitle>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-900">
-              {user?.current_team?.name ?? 'Personal workspace'}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {user?.current_team?.slug
-                ? `Slug: ${user.current_team.slug}`
-                : 'Default team for your account'}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" disabled>
-            Manage team
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            disabled={saving}
+            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+          >
+            {saving ? 'Updating...' : 'Update password'}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </form>
+    </SectionCard>
   )
 }
 
-/* ─── Danger Zone ─── */
+function TeamSection({ user }: { user: ReturnType<typeof useCurrentUser>['data'] }) {
+  return (
+    <SectionCard icon={<Shield className="w-4 h-4 text-violet-400" />} title="Team">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-white">
+            {user?.current_team?.name ?? 'Personal workspace'}
+          </p>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {user?.current_team?.slug
+              ? `Slug: ${user.current_team.slug}`
+              : 'Default team for your account'}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled
+          className="border-zinc-700 text-zinc-500"
+        >
+          Manage team
+        </Button>
+      </div>
+    </SectionCard>
+  )
+}
+
 function DangerZone() {
   const [deleting, setDeleting] = useState(false)
 
@@ -248,37 +267,41 @@ function DangerZone() {
   }
 
   return (
-    <Card className="border-red-200">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-500" />
-          <CardTitle className="text-base text-red-600">Danger Zone</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-xl border border-red-500/20 bg-surface-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-6 py-4 border-b border-red-500/20">
+        <AlertTriangle className="w-4 h-4 text-red-400" />
+        <h2 className="text-sm font-semibold text-red-400">Danger Zone</h2>
+      </div>
+      <div className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-900">Delete account</p>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-sm font-medium text-white">Delete account</p>
+            <p className="text-xs text-zinc-500 mt-0.5">
               Permanently delete your account and all data. This cannot be undone.
             </p>
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+              >
                 Delete account
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-surface-card border-zinc-800">
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle className="text-white">Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription className="text-zinc-400">
                   This action cannot be undone. This will permanently delete your account,
                   all services, tools, and analytics data.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                  Cancel
+                </AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-red-600 hover:bg-red-500 text-white"
                   onClick={handleDelete}
@@ -290,7 +313,7 @@ function DangerZone() {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
