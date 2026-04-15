@@ -5,63 +5,35 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\Plan;
+use App\Models\Plan as PlanModel;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Single source of truth for plan definitions, limits, and features.
+ * Reads from the `plans` table (cached for 1 hour).
  * Used by BillingController, MCP tools, middleware, and actions.
  */
 final class PlanService
 {
     public function all(): array
     {
-        return [
-            [
-                'id'               => 'free',
-                'name'             => 'free',
-                'display_name'     => 'Free',
-                'price'            => 0,
-                'limits'           => ['services' => 1, 'calls_per_month' => 1_000],
-                'features'         => ['Basic auth', 'Community support'],
-                'freemius_plan_id' => null,
-            ],
-            [
-                'id'               => 'starter',
-                'name'             => 'starter',
-                'display_name'     => 'Starter',
-                'price'            => 49,
-                'limits'           => ['services' => 3, 'calls_per_month' => 10_000],
-                'features'         => ['All auth methods', 'Basic analytics', 'Email support'],
-                'freemius_plan_id' => config('services.freemius.plan_starter'),
-            ],
-            [
-                'id'               => 'growth',
-                'name'             => 'growth',
-                'display_name'     => 'Growth',
-                'price'            => 149,
-                'limits'           => ['services' => 10, 'calls_per_month' => 100_000],
-                'features'         => ['Advanced analytics', 'CSV exports', 'Priority support', 'Webhook notifications', 'Custom auth configs'],
-                'freemius_plan_id' => config('services.freemius.plan_growth'),
-            ],
-            [
-                'id'               => 'business',
-                'name'             => 'business',
-                'display_name'     => 'Business',
-                'price'            => 399,
-                'limits'           => ['services' => null, 'calls_per_month' => 1_000_000],
-                'features'         => ['OAuth 2.0 support', 'White-label MCP endpoints', 'Audit logging', 'Dedicated support', 'SLA guarantee'],
-                'freemius_plan_id' => config('services.freemius.plan_business'),
-            ],
-        ];
+        return Cache::remember('plans.all', 3600, function (): array {
+            return PlanModel::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn (PlanModel $plan): array => $this->toArray($plan))
+                ->all();
+        });
     }
 
-    public function find(string $name): ?array
+    public function find(string $slug): ?array
     {
-        return collect($this->all())->firstWhere('name', $name);
+        return collect($this->all())->firstWhere('name', $slug);
     }
 
     public function forPlan(Plan $plan): array
     {
-        return $this->find($plan->value) ?? $this->find('free');
+        return $this->find($plan->value) ?? $this->fallbackFree();
     }
 
     public function serviceLimit(Plan $plan): ?int
@@ -72,5 +44,35 @@ final class PlanService
     public function callsLimit(Plan $plan): int
     {
         return $this->forPlan($plan)['limits']['calls_per_month'];
+    }
+
+    private function toArray(PlanModel $plan): array
+    {
+        return [
+            'id'               => $plan->slug,
+            'name'             => $plan->slug,
+            'display_name'     => $plan->display_name,
+            'price'            => $plan->price,
+            'limits'           => [
+                'services'        => $plan->services_limit,
+                'calls_per_month' => $plan->calls_per_month,
+            ],
+            'features'         => $plan->features,
+            'freemius_plan_id' => $plan->freemius_plan_id,
+        ];
+    }
+
+    /** Fallback when DB is not yet seeded or plan slug is missing. */
+    private function fallbackFree(): array
+    {
+        return [
+            'id'               => 'free',
+            'name'             => 'free',
+            'display_name'     => 'Free',
+            'price'            => 0,
+            'limits'           => ['services' => 1, 'calls_per_month' => 1_000],
+            'features'         => ['Basic auth', 'Community support'],
+            'freemius_plan_id' => null,
+        ];
     }
 }
