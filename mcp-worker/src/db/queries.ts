@@ -131,6 +131,52 @@ export async function getToolByName(serviceId: number, name: string): Promise<To
   }
 }
 
+/**
+ * Check plan limits before executing a tool call.
+ * Returns { allowed, calls_used, calls_limit }.
+ */
+export async function checkPlanLimits(token: string): Promise<{ allowed: boolean; calls_used: number; calls_limit: number }> {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/api/v1/internal/check-limits/${token}`,
+      { headers: { 'X-Worker-Secret': WORKER_SECRET } }
+    )
+    if (response.ok) {
+      const json = await response.json() as { data: { allowed: boolean; calls_used: number; calls_limit: number } }
+      return json.data
+    }
+  } catch {
+    // If we can't reach the backend, allow the call (fail-open)
+  }
+  return { allowed: true, calls_used: 0, calls_limit: 0 }
+}
+
+/**
+ * Record a tool call in the billing system (increments the call counter).
+ */
+export async function recordBillingCall(serviceId: number): Promise<{ allowed: boolean }> {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/api/v1/internal/tool-call`,
+      {
+        method: 'POST',
+        headers: {
+          'X-Worker-Secret': WORKER_SECRET,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ service_id: serviceId }),
+      }
+    )
+    if (response.ok) {
+      const json = await response.json() as { data: { allowed: boolean } }
+      return json.data
+    }
+  } catch {
+    // If we can't reach the backend, still allow (fail-open)
+  }
+  return { allowed: true }
+}
+
 export async function logToolCall(
   toolId: number,
   serviceId: number,

@@ -24,35 +24,38 @@ export function Header() {
     .slice(0, 2)
 
   return (
-    <header className="fixed top-0 left-[280px] right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10">
+    <header className="fixed top-0 left-[280px] right-0 h-16 bg-surface-card border-b border-zinc-800 flex items-center justify-between px-6 z-10">
       <div className="relative w-72">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
         <Input
           placeholder="Search..."
-          className="pl-9 bg-gray-50 border-gray-200 focus:bg-white"
+          className="pl-9 bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-brand-500"
         />
       </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <button className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-indigo-100 text-indigo-700 text-xs font-medium">
+              <AvatarFallback className="bg-brand-500/10 text-brand-400 text-xs font-medium border border-brand-500/20">
                 {initials ?? 'U'}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium text-gray-700">{user?.name}</span>
+            <span className="text-sm font-medium text-zinc-300">{user?.name}</span>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => void navigate('/settings')}>
+        <DropdownMenuContent align="end" className="w-48 bg-surface-card border-zinc-800">
+          <DropdownMenuItem
+            onClick={() => void navigate('/settings')}
+            className="text-zinc-300 focus:text-white focus:bg-zinc-800"
+          >
             <Settings className="w-4 h-4 mr-2" />
             Settings
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-zinc-800" />
           <DropdownMenuItem
             onClick={() => logout.mutate()}
-            className="text-red-600 focus:text-red-600"
+            className="text-red-400 focus:text-red-400 focus:bg-zinc-800"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Sign out

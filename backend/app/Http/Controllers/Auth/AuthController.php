@@ -133,4 +133,45 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Unable to reset password'], 422);
     }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|min:2|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $request->user()->id,
+        ]);
+
+        $request->user()->update($request->only('name', 'email'));
+
+        return response()->json([
+            'data' => new UserResource($request->user()->load('currentTeam')),
+        ]);
+    }
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($request->input('current_password'), $request->user()->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 422);
+        }
+
+        $request->user()->update([
+            'password' => Hash::make($request->input('password')),
+        ]);
+
+        return response()->json(['message' => 'Password updated']);
+    }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json(null, 204);
+    }
 }

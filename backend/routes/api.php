@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Internal\WorkerController;
+use App\Http\Controllers\FreemiusWebhookController;
 use App\Http\Controllers\ServiceConnectorController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ToolController;
@@ -50,10 +52,31 @@ Route::prefix('v1')->group(function (): void {
         Route::get('services/{service}/analytics', [AnalyticsController::class, 'serviceAnalytics']);
         Route::get('services/{service}/analytics/export', [AnalyticsController::class, 'exportCsv']);
         Route::get('services/{service}/audit-log', [AnalyticsController::class, 'auditLog']);
+
+        // Billing
+        Route::prefix('billing')->group(function (): void {
+            Route::get('plans', [BillingController::class, 'plans']);
+            Route::get('checkout-config', [BillingController::class, 'checkoutConfig']);
+            Route::get('subscription', [BillingController::class, 'subscription']);
+            Route::get('usage', [BillingController::class, 'usage']);
+            Route::get('invoices', [BillingController::class, 'invoices']);
+            Route::post('cancel', [BillingController::class, 'cancel']);
+            Route::post('resume', [BillingController::class, 'resume']);
+        });
+
+        // Auth profile management
+        Route::patch('auth/profile', [AuthController::class, 'updateProfile']);
+        Route::put('auth/password', [AuthController::class, 'updatePassword']);
+        Route::delete('auth/account', [AuthController::class, 'deleteAccount']);
     });
+
+    // Freemius webhook (public, verified by signature)
+    Route::post('webhooks/freemius', [FreemiusWebhookController::class, 'handle']);
 
     // Internal routes (worker-to-backend, secured by X-Worker-Secret header)
     Route::prefix('internal')->group(function (): void {
         Route::get('service-config/{token}', [WorkerController::class, 'serviceConfig']);
+        Route::post('tool-call', [WorkerController::class, 'recordToolCall']);
+        Route::get('check-limits/{token}', [WorkerController::class, 'checkLimits']);
     });
 });

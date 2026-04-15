@@ -1,16 +1,10 @@
 import { useLogin } from '@/api/auth'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plug } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowRight, Zap } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -41,69 +35,142 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <Plug className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-2xl text-gray-900">MCPify</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-surface flex relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-grid-pattern" />
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-600/8 rounded-full blur-[140px]" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[120px]" />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Left panel — branding (hidden on mobile) */}
+      <div className="hidden lg:flex flex-1 items-center justify-center relative">
+        <div className="max-w-md px-12">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Link to="/" className="flex items-center gap-2.5 mb-10">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/20">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-2xl font-bold text-white tracking-tight">MCPify</span>
+            </Link>
+
+            <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">
+              Turn any REST API into an MCP server
+            </h2>
+            <p className="text-zinc-400 text-lg leading-relaxed mb-8">
+              Connect your API to ChatGPT, Claude, Cursor and every AI client — zero MCP code required.
+            </p>
+
+            {/* Feature list */}
+            <div className="space-y-4">
+              {[
+                'Import OpenAPI specs in seconds',
+                'Auto-generate MCP tools',
+                'Built-in auth & rate limiting',
+              ].map((item, i) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+                  className="flex items-center gap-3"
+                >
+                  <div className="w-5 h-5 rounded-full bg-brand-500/10 border border-brand-500/20 flex items-center justify-center flex-shrink-0">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-400" />
+                  </div>
+                  <span className="text-zinc-300 text-sm">{item}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center relative z-10 p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile logo */}
+          <Link to="/" className="flex items-center gap-2.5 mb-8 lg:hidden justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white">MCPify</span>
+          </Link>
+
+          <div className="rounded-2xl border border-zinc-800 bg-surface-card p-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/30 to-transparent" />
+
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
+              <p className="text-zinc-400 text-sm">Sign in to your account</p>
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-zinc-300 text-sm">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
+                  className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-brand-500 focus:ring-brand-500/20"
                   {...register('email')}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                  <p className="text-sm text-red-400">{errors.email.message}</p>
                 )}
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-zinc-300 text-sm">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
+                  className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-brand-500 focus:ring-brand-500/20"
                   {...register('password')}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-500">{errors.password.message}</p>
+                  <p className="text-sm text-red-400">{errors.password.message}</p>
                 )}
               </div>
+
               <div className="flex justify-end">
-                <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+                <Link to="/forgot-password" className="text-sm text-brand-400 hover:text-brand-300 transition-colors">
                   Forgot password?
                 </Link>
               </div>
+
               <Button
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
+                className="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2.5 rounded-xl transition-all shadow-lg shadow-brand-600/20 hover:shadow-brand-500/30 group"
                 disabled={login.isPending}
               >
-                {login.isPending ? 'Signing in...' : 'Sign in'}
+                {login.isPending ? 'Signing in...' : (
+                  <span className="flex items-center justify-center gap-2">
+                    Sign in
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                )}
               </Button>
             </form>
-            <p className="mt-4 text-center text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link to="/register" className="text-indigo-600 hover:underline font-medium">
-                Sign up
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
+
+            <div className="mt-6 pt-6 border-t border-zinc-800">
+              <p className="text-center text-sm text-zinc-400">
+                Don&apos;t have an account?{' '}
+                <Link to="/register" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   )

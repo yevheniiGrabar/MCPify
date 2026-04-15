@@ -4,6 +4,7 @@ import { AnalyticsPage } from '@/pages/analytics'
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '@/pages/auth'
 import { BillingPage } from '@/pages/billing'
 import { DashboardPage } from '@/pages/dashboard'
+import { LandingPage } from '@/pages/landing'
 import {
   AuditLogPage,
   ConnectServicePage,
@@ -18,6 +19,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 export function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -25,7 +27,6 @@ export function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/services/new" element={<CreateServicePage />} />

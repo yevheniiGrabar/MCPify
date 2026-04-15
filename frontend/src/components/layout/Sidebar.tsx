@@ -5,6 +5,7 @@ import {
   LayoutGrid,
   Plug,
   Settings,
+  Zap,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
@@ -18,13 +19,13 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[280px] bg-white border-r border-gray-200 flex flex-col z-10">
-      <div className="px-6 py-5 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <Plug className="w-4 h-4 text-white" />
+    <aside className="fixed left-0 top-0 h-screen w-[280px] bg-surface-card border-r border-zinc-800 flex flex-col z-10">
+      <div className="px-6 py-5 border-b border-zinc-800">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/20">
+            <Zap className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-lg text-gray-900">MCPify</span>
+          <span className="font-bold text-lg text-white tracking-tight">MCPify</span>
         </div>
       </div>
 
@@ -37,8 +38,8 @@ export function Sidebar() {
               cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-brand-600/15 text-brand-400 border border-brand-500/20'
+                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-white border border-transparent'
               )
             }
           >
@@ -48,8 +49,8 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-3 py-4 border-t border-gray-200">
-        <p className="text-xs text-gray-400 px-3">MCPify v0.1.0</p>
+      <div className="px-3 py-4 border-t border-zinc-800">
+        <p className="text-xs text-zinc-600 px-3">MCPify v0.1.0</p>
       </div>
     </aside>
   )

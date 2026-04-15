@@ -40,4 +40,14 @@ return [
         'secret' => env('MCP_WORKER_SECRET', 'secret_key_here'),
     ],
 
+    'freemius' => [
+        'product_id' => env('FREEMIUS_PRODUCT_ID'),
+        'store_id' => env('FREEMIUS_STORE_ID'),
+        'public_key' => env('FREEMIUS_PUBLIC_KEY'),
+        'secret_key' => env('FREEMIUS_SECRET_KEY'),
+        'plan_starter' => env('FREEMIUS_PLAN_STARTER'),
+        'plan_growth' => env('FREEMIUS_PLAN_GROWTH'),
+        'plan_business' => env('FREEMIUS_PLAN_BUSINESS'),
+    ],
+
 ];

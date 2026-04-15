@@ -1,9 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import {
+  checkPlanLimits,
   getEnabledTools,
   getToolByName,
   logToolCall,
+  recordBillingCall,
   type ServiceWithConfig,
 } from '../db/queries.js'
 import { executeTool } from './executor.js'
@@ -95,6 +97,18 @@ export async function createMcpServer(serviceData: ServiceWithConfig, caller?: C
       async (args: Record<string, unknown>) => {
         const start = Date.now()
 
+        // Check plan limits before executing
+        const limits = await checkPlanLimits(service.mcp_url_token)
+        if (!limits.allowed) {
+          return {
+            content: [{
+              type: 'text' as const,
+              text: `Monthly tool call limit reached (${limits.calls_used}/${limits.calls_limit}). The service owner needs to upgrade their MCPify plan.`,
+            }],
+            isError: true,
+          }
+        }
+
         // Destructive tool confirmation check
         if (tool.is_destructive && args.confirm_destructive !== true) {
           return {
@@ -128,6 +142,9 @@ export async function createMcpServer(serviceData: ServiceWithConfig, caller?: C
 
           const durationMs = Date.now() - start
           const isError = result.status >= 400 || result.status === 0
+
+          // Record call for billing (increment counter)
+          await recordBillingCall(service.id).catch(() => {})
 
           // Log the call
           await logToolCall(

@@ -1,4 +1,6 @@
 import { useCreateService } from '@/api/services'
+import { useUsage } from '@/api/billing'
+import { UpgradePlanDialog } from '@/components/billing/UpgradePlanDialog'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -10,7 +12,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { isAxiosError } from 'axios'
 import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -26,6 +30,8 @@ type FormData = z.infer<typeof schema>
 export function CreateServicePage() {
   const navigate = useNavigate()
   const createService = useCreateService()
+  const { data: usage } = useUsage()
+  const [showUpgrade, setShowUpgrade] = useState(false)
 
   const {
     register,
@@ -39,7 +45,13 @@ export function CreateServicePage() {
         toast.success('Service created successfully')
         void navigate(`/services/${service.id}`)
       },
-      onError: () => toast.error('Failed to create service'),
+      onError: (error) => {
+        if (isAxiosError(error) && error.response?.status === 403) {
+          setShowUpgrade(true)
+        } else {
+          toast.error('Failed to create service')
+        }
+      },
     })
   }
 
@@ -98,6 +110,14 @@ export function CreateServicePage() {
           </form>
         </CardContent>
       </Card>
+
+      <UpgradePlanDialog
+        open={showUpgrade}
+        onOpenChange={setShowUpgrade}
+        resource="services"
+        current={usage?.services_used ?? 0}
+        limit={usage?.services_limit ?? 1}
+      />
     </div>
   )
 }
