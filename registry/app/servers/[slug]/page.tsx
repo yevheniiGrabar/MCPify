@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ConnectInstructions } from '@/components/ConnectInstructions'
 import type { RegistryServer } from '@/lib/types'
+import { MOCK_SERVERS } from '@/lib/mock-servers'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
 
@@ -10,11 +11,11 @@ async function getServer(slug: string): Promise<RegistryServer | null> {
     const res = await fetch(`${API_URL}/registry/servers/${slug}`, {
       next: { revalidate: 60 },
     })
-    if (!res.ok) return null
+    if (!res.ok) return MOCK_SERVERS.find((s) => s.slug === slug) ?? null
     const data = await res.json()
-    return (data.data as RegistryServer) ?? null
+    return (data.data as RegistryServer) ?? MOCK_SERVERS.find((s) => s.slug === slug) ?? null
   } catch {
-    return null
+    return MOCK_SERVERS.find((s) => s.slug === slug) ?? null
   }
 }
 

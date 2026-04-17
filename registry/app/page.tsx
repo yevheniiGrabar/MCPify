@@ -3,6 +3,7 @@ import { ServerCard } from '@/components/ServerCard'
 import { SearchBar } from '@/components/SearchBar'
 import { CategoryFilter } from '@/components/CategoryFilter'
 import type { RegistryServer } from '@/lib/types'
+import { MOCK_SERVERS } from '@/lib/mock-servers'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api'
 
@@ -10,18 +11,47 @@ interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; sort?: string }>
 }
 
-async function fetchServersSSR(params: Record<string, string>) {
+async function fetchServersSSR(params: Record<string, string>): Promise<RegistryServer[]> {
   const query = new URLSearchParams(params).toString()
   const url = `${API_URL}/registry/servers${query ? `?${query}` : ''}`
 
   try {
     const res = await fetch(url, { cache: 'no-store' })
-    if (!res.ok) return []
+    if (!res.ok) return filterMock(params)
     const data = await res.json()
-    return (data.data as RegistryServer[]) ?? []
+    const servers = (data.data as RegistryServer[]) ?? []
+    return servers.length > 0 ? servers : filterMock(params)
   } catch {
-    return []
+    return filterMock(params)
   }
+}
+
+function filterMock(params: Record<string, string>): RegistryServer[] {
+  let servers = MOCK_SERVERS
+
+  if (params.category) {
+    servers = servers.filter((s) => s.category === params.category)
+  }
+
+  if (params.search) {
+    const q = params.search.toLowerCase()
+    servers = servers.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        s.tags?.some((t) => t.toLowerCase().includes(q)),
+    )
+  }
+
+  if (params.sort === 'rating') {
+    servers = [...servers].sort((a, b) => Number(b.rating_avg) - Number(a.rating_avg))
+  } else if (params.sort === 'newest') {
+    servers = [...servers].sort((a, b) => b.created_at.localeCompare(a.created_at))
+  } else {
+    servers = [...servers].sort((a, b) => b.install_count - a.install_count)
+  }
+
+  return servers
 }
 
 export default async function HomePage({ searchParams }: PageProps) {

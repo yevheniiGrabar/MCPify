@@ -46,7 +46,7 @@ export function ServerCard({ server }: ServerCardProps) {
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
         <div className="flex items-center gap-3">
           <span>⬇ {server.install_count.toLocaleString()}</span>
           <span>★ {Number(server.rating_avg).toFixed(1)}</span>
@@ -61,6 +61,12 @@ export function ServerCard({ server }: ServerCardProps) {
           {server.pricing_type === 'free'
             ? 'Free'
             : `$${((server.price_monthly ?? 0) / 100).toFixed(0)}/mo`}
+        </span>
+      </div>
+
+      <div className="pt-2 border-t border-gray-800">
+        <span className="block w-full text-center bg-violet-600/10 hover:bg-violet-600 text-violet-300 hover:text-white text-xs font-medium py-1.5 rounded-lg transition-colors">
+          Connect →
         </span>
       </div>
     </Link>
