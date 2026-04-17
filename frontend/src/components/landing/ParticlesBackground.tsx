@@ -21,8 +21,8 @@ export function ParticlesBackground() {
     let H = 0
     let animId: number
     let mouse = { x: -9999, y: -9999 }
-    const COUNT = 55
-    const MAX_DIST = 140
+    const COUNT = 100
+    const MAX_DIST = 160
     const particles: Particle[] = []
 
     const resize = () => {
@@ -64,8 +64,8 @@ export function ParticlesBackground() {
             ctx.beginPath()
             ctx.moveTo(particles[i].x, particles[i].y)
             ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(124,58,237,${0.15 * (1 - dist / MAX_DIST)})`
-            ctx.lineWidth = 0.8
+            ctx.strokeStyle = `rgba(124,58,237,${0.35 * (1 - dist / MAX_DIST)})`
+            ctx.lineWidth = 1
             ctx.stroke()
           }
         }
@@ -80,7 +80,7 @@ export function ParticlesBackground() {
           ctx.beginPath()
           ctx.moveTo(p.x, p.y)
           ctx.lineTo(mouse.x, mouse.y)
-          ctx.strokeStyle = `rgba(168,85,247,${0.25 * (1 - dist / 160)})`
+          ctx.strokeStyle = `rgba(168,85,247,${0.5 * (1 - dist / 160)})`
           ctx.lineWidth = 0.8
           ctx.stroke()
         }
@@ -90,7 +90,7 @@ export function ParticlesBackground() {
       for (const p of particles) {
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(139,92,246,0.5)'
+        ctx.fillStyle = 'rgba(139,92,246,0.8)'
         ctx.fill()
       }
 
