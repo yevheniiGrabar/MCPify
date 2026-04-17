@@ -1,8 +1,8 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { ServerCard } from '@/components/ServerCard'
 import { SearchBar } from '@/components/SearchBar'
 import { CategoryFilter } from '@/components/CategoryFilter'
+import { ServerGrid } from '@/components/ServerGrid'
 import type { RegistryServer } from '@/lib/types'
 import { MOCK_SERVERS } from '@/lib/mock-servers'
 
@@ -126,32 +126,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {servers.map((server) => (
-              <ServerCard key={server.id} server={server} />
-            ))}
-
-            {/* Publish CTA card */}
-            <a
-              href="https://mpcify.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center justify-center border-2 border-dashed border-gray-700 hover:border-teal-600 rounded-xl p-5 text-center transition-colors group min-h-[200px]"
-            >
-              <div className="w-10 h-10 rounded-lg border-2 border-dashed border-gray-600 group-hover:border-teal-500 flex items-center justify-center mb-3 transition-colors">
-                <span className="text-gray-500 group-hover:text-teal-400 text-xl transition-colors">+</span>
-              </div>
-              <p className="text-sm font-semibold text-gray-400 group-hover:text-white transition-colors mb-1">
-                Publish your MCP server here
-              </p>
-              <p className="text-xs text-gray-600 group-hover:text-gray-400 transition-colors mb-3">
-                Built with mcpify.app
-              </p>
-              <span className="text-xs bg-teal-600/20 group-hover:bg-teal-600 text-teal-400 group-hover:text-white px-3 py-1.5 rounded-lg transition-colors">
-                Create your server →
-              </span>
-            </a>
-          </div>
+          <ServerGrid servers={servers} />
         )}
       </div>
     </div>
