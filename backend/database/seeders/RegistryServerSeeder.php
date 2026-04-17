@@ -1,0 +1,151 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Seeders;
+
+use App\Models\RegistryServer;
+use Illuminate\Database\Seeder;
+
+final class RegistryServerSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $servers = [
+            [
+                'name' => 'Shopify MCP',
+                'slug' => 'shopify-mcp',
+                'description' => 'Connect your AI agents to Shopify. Manage products, orders, customers, and inventory through natural language.',
+                'category' => 'ecommerce',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/shopify-mcp',
+                'auth_type' => 'api_key',
+                'version' => '1.2.0',
+                'is_public' => true,
+                'is_verified' => true,
+                'install_count' => 4820,
+                'rating_avg' => 4.8,
+                'pricing_type' => 'free',
+                'logo_url' => 'https://cdn.shopify.com/shopifycloud/branding/assets/bag-logo.svg',
+                'tags' => ['shopify', 'ecommerce', 'inventory', 'orders'],
+                'github_url' => 'https://github.com/mcpify/shopify-mcp',
+                'docs_url' => 'https://docs.mcpify.com/servers/shopify',
+            ],
+            [
+                'name' => 'Stripe MCP',
+                'slug' => 'stripe-mcp',
+                'description' => 'Full Stripe integration for AI agents. Handle payments, subscriptions, customers, and financial reporting.',
+                'category' => 'payments',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/stripe-mcp',
+                'auth_type' => 'api_key',
+                'version' => '2.0.1',
+                'is_public' => true,
+                'is_verified' => true,
+                'install_count' => 6340,
+                'rating_avg' => 4.9,
+                'pricing_type' => 'free',
+                'logo_url' => 'https://stripe.com/img/v3/home/twitter.png',
+                'tags' => ['stripe', 'payments', 'billing', 'subscriptions'],
+                'github_url' => 'https://github.com/mcpify/stripe-mcp',
+                'docs_url' => 'https://docs.mcpify.com/servers/stripe',
+            ],
+            [
+                'name' => 'HubSpot MCP',
+                'slug' => 'hubspot-mcp',
+                'description' => 'Connect AI agents to HubSpot CRM. Manage contacts, deals, pipelines, and marketing automation.',
+                'category' => 'crm',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/hubspot-mcp',
+                'auth_type' => 'oauth',
+                'version' => '1.1.0',
+                'is_public' => true,
+                'is_verified' => false,
+                'install_count' => 2100,
+                'rating_avg' => 4.5,
+                'pricing_type' => 'free',
+                'tags' => ['hubspot', 'crm', 'marketing', 'sales'],
+                'github_url' => 'https://github.com/mcpify/hubspot-mcp',
+            ],
+            [
+                'name' => 'Google Analytics MCP',
+                'slug' => 'google-analytics-mcp',
+                'description' => 'Query your GA4 data with natural language. Get traffic insights, conversion rates, and custom reports.',
+                'category' => 'analytics',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/ga4-mcp',
+                'auth_type' => 'oauth',
+                'version' => '1.0.3',
+                'is_public' => true,
+                'is_verified' => false,
+                'install_count' => 1850,
+                'rating_avg' => 4.3,
+                'pricing_type' => 'free',
+                'tags' => ['google-analytics', 'analytics', 'ga4', 'reporting'],
+            ],
+            [
+                'name' => 'GitHub MCP',
+                'slug' => 'github-mcp',
+                'description' => 'Full GitHub integration. Manage repos, PRs, issues, and CI/CD pipelines through AI agents.',
+                'category' => 'devtools',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/github-mcp',
+                'auth_type' => 'oauth',
+                'version' => '3.1.0',
+                'is_public' => true,
+                'is_verified' => true,
+                'install_count' => 9200,
+                'rating_avg' => 4.9,
+                'pricing_type' => 'free',
+                'tags' => ['github', 'git', 'devtools', 'ci-cd'],
+                'github_url' => 'https://github.com/mcpify/github-mcp',
+                'docs_url' => 'https://docs.mcpify.com/servers/github',
+            ],
+            [
+                'name' => 'Slack MCP',
+                'slug' => 'slack-mcp',
+                'description' => 'Send messages, read channels, search conversations, and manage Slack workspaces with AI agents.',
+                'category' => 'communication',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/slack-mcp',
+                'auth_type' => 'oauth',
+                'version' => '1.4.0',
+                'is_public' => true,
+                'is_verified' => false,
+                'install_count' => 3400,
+                'rating_avg' => 4.6,
+                'pricing_type' => 'free',
+                'tags' => ['slack', 'messaging', 'communication', 'channels'],
+            ],
+            [
+                'name' => 'Notion MCP',
+                'slug' => 'notion-mcp',
+                'description' => 'Read and write Notion databases, pages, and blocks. Perfect for knowledge management workflows.',
+                'category' => 'productivity',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/notion-mcp',
+                'auth_type' => 'api_key',
+                'version' => '1.2.1',
+                'is_public' => true,
+                'is_verified' => false,
+                'install_count' => 2750,
+                'rating_avg' => 4.4,
+                'pricing_type' => 'free',
+                'tags' => ['notion', 'productivity', 'knowledge-base', 'databases'],
+            ],
+            [
+                'name' => 'HireLang MCP',
+                'slug' => 'hirelang-mcp',
+                'description' => 'AI-powered recruiting automation. Screen candidates, schedule interviews, and manage your ATS pipeline.',
+                'category' => 'hr',
+                'endpoint_url' => 'https://mcp.mcpfy.com/servers/hirelang-mcp',
+                'auth_type' => 'api_key',
+                'version' => '1.0.0',
+                'is_public' => true,
+                'is_verified' => false,
+                'install_count' => 420,
+                'rating_avg' => 4.2,
+                'pricing_type' => 'paid',
+                'price_monthly' => 2900,
+                'tags' => ['hr', 'recruiting', 'ats', 'hiring'],
+            ],
+        ];
+
+        foreach ($servers as $server) {
+            RegistryServer::create($server);
+        }
+    }
+}

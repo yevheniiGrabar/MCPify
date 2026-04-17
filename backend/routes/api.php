@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\Api\RegistryController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Internal\WorkerController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\ServiceConnectorController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ToolController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('v1/health', fn () => response()->json(['status' => 'ok']));
 
 Route::prefix('v1')->group(function (): void {
     // Auth routes
@@ -73,10 +76,19 @@ Route::prefix('v1')->group(function (): void {
     // Freemius webhook (public, verified by signature)
     Route::post('webhooks/freemius', [FreemiusWebhookController::class, 'handle']);
 
-    // Internal routes (worker-to-backend, secured by X-Worker-Secret header)
-    Route::prefix('internal')->group(function (): void {
+    // Internal routes (worker-to-backend, secured by X-Worker-Secret header + IP restriction)
+    Route::prefix('internal')->middleware('worker.only')->group(function (): void {
         Route::get('service-config/{token}', [WorkerController::class, 'serviceConfig']);
         Route::post('tool-call', [WorkerController::class, 'recordToolCall']);
         Route::get('check-limits/{token}', [WorkerController::class, 'checkLimits']);
+    });
+
+    // Registry routes (public)
+    Route::prefix('registry')->group(function () {
+        Route::get('servers', [RegistryController::class, 'index']);
+        Route::get('servers/{slug}', [RegistryController::class, 'show']);
+        Route::get('categories', [RegistryController::class, 'categories']);
+        Route::post('servers/{slug}/connect', [RegistryController::class, 'connect']);
+        Route::post('servers', [RegistryController::class, 'store'])->middleware('auth:sanctum');
     });
 });
