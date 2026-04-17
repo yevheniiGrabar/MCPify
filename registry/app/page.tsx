@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { ServerCard } from '@/components/ServerCard'
 import { SearchBar } from '@/components/SearchBar'
 import { CategoryFilter } from '@/components/CategoryFilter'
@@ -84,6 +85,23 @@ export default async function HomePage({ searchParams }: PageProps) {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+
+        {/* Promo banner */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-teal-950/40 border border-teal-800/50 rounded-xl px-5 py-4 mb-6">
+          <div>
+            <p className="text-sm font-semibold text-teal-300">Want to create your own MCP server?</p>
+            <p className="text-xs text-teal-500 mt-0.5">Connect any API to AI agents in 5 minutes — no code needed</p>
+          </div>
+          <a
+            href="https://mcpify.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+          >
+            Try mcpify.app →
+          </a>
+        </div>
+
         {/* Category filters */}
         <div className="mb-8">
           <Suspense fallback={null}>
@@ -93,15 +111,46 @@ export default async function HomePage({ searchParams }: PageProps) {
 
         {/* Grid */}
         {servers.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <p className="text-lg">No servers found.</p>
-            <p className="text-sm mt-2">Try a different search or category.</p>
+          <div className="text-center py-16">
+            <p className="text-lg font-semibold text-white mb-2">The registry is growing</p>
+            <p className="text-sm text-gray-400 mb-6">
+              New MCP servers are added daily. Meanwhile — create your own MCP server in 5 minutes
+            </p>
+            <a
+              href="https://mcpify.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            >
+              Create on mcpify.app →
+            </a>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {servers.map((server) => (
               <ServerCard key={server.id} server={server} />
             ))}
+
+            {/* Publish CTA card */}
+            <a
+              href="https://mcpify.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center border-2 border-dashed border-gray-700 hover:border-teal-600 rounded-xl p-5 text-center transition-colors group min-h-[200px]"
+            >
+              <div className="w-10 h-10 rounded-lg border-2 border-dashed border-gray-600 group-hover:border-teal-500 flex items-center justify-center mb-3 transition-colors">
+                <span className="text-gray-500 group-hover:text-teal-400 text-xl transition-colors">+</span>
+              </div>
+              <p className="text-sm font-semibold text-gray-400 group-hover:text-white transition-colors mb-1">
+                Publish your MCP server here
+              </p>
+              <p className="text-xs text-gray-600 group-hover:text-gray-400 transition-colors mb-3">
+                Built with mcpify.app
+              </p>
+              <span className="text-xs bg-teal-600/20 group-hover:bg-teal-600 text-teal-400 group-hover:text-white px-3 py-1.5 rounded-lg transition-colors">
+                Create your server →
+              </span>
+            </a>
           </div>
         )}
       </div>
