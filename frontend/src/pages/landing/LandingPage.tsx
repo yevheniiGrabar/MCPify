@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { NetworkAnimation } from '@/components/landing/NetworkAnimation'
 
 /* ─── Animation variants ─── */
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
@@ -191,6 +192,7 @@ function Hero() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-brand-600/8 rounded-full blur-[140px]" />
       <div className="absolute top-20 right-20 w-80 h-80 bg-purple-600/6 rounded-full blur-[120px]" />
       <div className="absolute bottom-0 left-20 w-60 h-60 bg-emerald-600/5 rounded-full blur-[100px]" />
+      <NetworkAnimation />
 
       <div className="relative max-w-7xl mx-auto px-6 text-center">
         <motion.div
