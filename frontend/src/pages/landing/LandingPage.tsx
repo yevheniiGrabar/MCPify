@@ -269,7 +269,7 @@ function Hero() {
               <div className="mt-2">
                 <span className="text-brand-400">https</span>
                 <span className="text-zinc-500">://</span>
-                <span className="text-white">mcpify.dev</span>
+                <span className="text-white">mcpify.app</span>
                 <span className="text-zinc-500">/mcp/</span>
                 <span className="text-emerald-400">{'<your-token>'}</span>
                 <span className="inline-block w-0.5 h-5 bg-brand-400 ml-1 align-middle" style={{ animation: 'blink 1.2s step-end infinite' }} />
@@ -1355,7 +1355,7 @@ function DeveloperExperience() {
                   <span className="text-zinc-500">{'      '}</span>
                   <span className="text-brand-300">{'"url"'}</span>
                   <span className="text-zinc-500">{': '}</span>
-                  <span className="text-emerald-400">{'"https://mcpify.dev/mcp/abc...xyz"'}</span>
+                  <span className="text-emerald-400">{'"https://mcpify.app/mcp/abc...xyz"'}</span>
                   <span className="text-zinc-500">{'\n    }\n  }\n}'}</span>
                 </code>
               </pre>

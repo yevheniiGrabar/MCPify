@@ -33,7 +33,7 @@ export default function RootLayout({
                 <Link href="/publish" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Publish
                 </Link>
-                <Link href="https://docs.mcpify.com" className="text-sm text-gray-400 hover:text-white transition-colors">
+                <Link href="https://docs.mcpify.app" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Docs
                 </Link>
               </nav>
