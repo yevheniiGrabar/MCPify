@@ -29,16 +29,15 @@ export function Sidebar({ collapsed }: SidebarProps) {
       {/* Logo — exact h-16 to align with header */}
       <div className="h-16 flex items-center border-b border-zinc-800 flex-shrink-0 px-4">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/20 flex-shrink-0">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
           <span
             className={cn(
-              'font-bold text-lg text-white tracking-tight whitespace-nowrap transition-[opacity,width] duration-300 ease-in-out overflow-hidden',
+              'font-mono font-bold text-lg tracking-tight whitespace-nowrap transition-[opacity,width] duration-300 ease-in-out overflow-hidden',
               collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
             )}
           >
-            MCPify
+            <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">mcp</span>
+            <span className="text-zinc-500 font-light">/</span>
+            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-400 bg-clip-text text-transparent">ify</span>
           </span>
         </div>
       </div>

@@ -128,11 +128,12 @@ function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/20">
-            <Zap className="w-4.5 h-4.5 text-white" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">MCPify</span>
+        <Link to="/" className="flex items-center">
+          <span className="font-mono font-bold text-lg tracking-tight">
+            <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">mcp</span>
+            <span className="text-zinc-500 font-light">/</span>
+            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-400 bg-clip-text text-transparent">ify</span>
+          </span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
