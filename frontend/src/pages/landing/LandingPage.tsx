@@ -130,9 +130,9 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <span className="font-mono font-bold text-lg tracking-tight">
-            <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">mcp</span>
-            <span className="text-zinc-500 font-light">/</span>
-            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-400 bg-clip-text text-transparent">ify</span>
+            <span className="text-zinc-500">{`{ `}</span>
+            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">mcpfy</span>
+            <span className="text-zinc-500">{` }`}</span>
           </span>
         </Link>
 

@@ -34,9 +34,9 @@ export function Sidebar({ collapsed }: SidebarProps) {
               collapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
             )}
           >
-            <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">mcp</span>
-            <span className="text-zinc-500 font-light">/</span>
-            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-400 bg-clip-text text-transparent">ify</span>
+            <span className="text-zinc-500">{`{ `}</span>
+            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">mcpfy</span>
+            <span className="text-zinc-500">{` }`}</span>
           </span>
         </div>
       </div>
