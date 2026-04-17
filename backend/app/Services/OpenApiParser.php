@@ -199,6 +199,8 @@ final class OpenApiParser
      */
     public function parseFromUrl(Service $service, string $url): array
     {
+        $this->validateUrlForSsrf($url);
+
         $response = Http::timeout(30)->get($url);
 
         if (! $response->successful()) {
@@ -405,6 +407,28 @@ final class OpenApiParser
         }
 
         return is_array($resolved) ? $resolved : [];
+    }
+
+    private function validateUrlForSsrf(string $url): void
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($host) || $host === '') {
+            throw new \InvalidArgumentException('Invalid URL: cannot determine host.');
+        }
+
+        // Resolve hostname to IP (returns hostname unchanged on failure)
+        $ip = gethostbyname($host);
+
+        if ($ip === $host && filter_var($host, FILTER_VALIDATE_IP) === false) {
+            throw new \InvalidArgumentException('Unable to resolve hostname.');
+        }
+
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
+            throw new \InvalidArgumentException('URL resolves to a private or reserved IP address.');
+        }
     }
 
     private function extractBaseUrl(array $spec, ?string $specUrl): ?string

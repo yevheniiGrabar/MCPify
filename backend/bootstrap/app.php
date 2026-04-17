@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'plan.limits' => \App\Http\Middleware\CheckPlanLimits::class,
+            'worker.only' => \App\Http\Middleware\RestrictToWorker::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
