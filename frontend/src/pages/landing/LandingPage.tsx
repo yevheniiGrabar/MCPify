@@ -20,6 +20,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { NetworkAnimation } from '@/components/landing/NetworkAnimation'
+import { ParticlesBackground } from '@/components/landing/ParticlesBackground'
 
 /* ─── Animation variants ─── */
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
@@ -90,7 +91,8 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-surface text-white font-sans overflow-x-hidden landing-scroll">
+    <div className="relative min-h-screen bg-surface text-white font-sans overflow-x-hidden landing-scroll">
+      <ParticlesBackground />
       <Navbar />
       <Hero />
       <LogoCloud />
