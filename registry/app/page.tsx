@@ -93,7 +93,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             <p className="text-xs text-teal-500 mt-0.5">Connect any API to AI agents in 5 minutes — no code needed</p>
           </div>
           <a
-            href="https://mcpify.app"
+            href="https://mpcify.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
             className="flex-shrink-0 bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
@@ -117,7 +117,7 @@ export default async function HomePage({ searchParams }: PageProps) {
               New MCP servers are added daily. Meanwhile — create your own MCP server in 5 minutes
             </p>
             <a
-              href="https://mcpify.app"
+              href="https://mpcify.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-teal-600 hover:bg-teal-500 text-white font-medium px-6 py-3 rounded-lg transition-colors"
@@ -133,7 +133,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
             {/* Publish CTA card */}
             <a
-              href="https://mcpify.app"
+              href="https://mpcify.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="flex flex-col items-center justify-center border-2 border-dashed border-gray-700 hover:border-teal-600 rounded-xl p-5 text-center transition-colors group min-h-[200px]"
