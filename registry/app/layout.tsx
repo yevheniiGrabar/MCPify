@@ -18,12 +18,11 @@ export default function RootLayout({
         <header className="border-b border-gray-800 bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">M</span>
-                </div>
-                <span className="font-semibold text-white">
-                  mcp<span className="text-violet-400 font-bold">registry</span>
+              <Link href="/" className="flex items-center gap-1.5">
+                <span className="font-mono font-bold text-lg tracking-tight">
+                  <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">mcp</span>
+                  <span className="text-gray-500 font-light">/</span>
+                  <span className="bg-gradient-to-r from-fuchsia-400 to-pink-400 bg-clip-text text-transparent">registry</span>
                 </span>
               </Link>
               <nav className="hidden md:flex items-center gap-8">
