@@ -1,4 +1,4 @@
-import { motion, useInView, useMotionValue, useTransform, animate, useScroll } from 'framer-motion'
+import { type Variants, motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
 import {
   ArrowRight,
   BarChart3,
@@ -6,17 +6,14 @@ import {
   Check,
   ChevronRight,
   Code2,
-  FileJson,
   Globe,
   Lock,
   Menu,
-  MessageSquare,
   MonitorSmartphone,
   Search,
   Shield,
   Sparkles,
   Upload,
-  User,
   X,
   Zap,
 } from 'lucide-react'
@@ -24,21 +21,23 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 /* ─── Animation variants ─── */
-const fadeUp = {
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1]
+
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.1, duration: 0.6, ease: EASE },
   }),
 }
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
   visible: (i: number) => ({
     opacity: 1,
     scale: 1,
-    transition: { delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.12, duration: 0.5, ease: EASE },
   }),
 }
 
@@ -68,7 +67,7 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 
   useEffect(() => {
     if (isInView) {
-      const controls = animate(motionValue, value, { duration: 2, ease: [0.22, 1, 0.36, 1] })
+      const controls = animate(motionValue, value, { duration: 2, ease: EASE })
       return controls.stop
     }
   }, [isInView, motionValue, value])
@@ -440,7 +439,7 @@ function HowItWorks() {
                 <motion.div
                   initial={{ opacity: 0, y: 40, scale: 0.95 }}
                   animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-                  transition={{ delay: 0.2 + i * 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ delay: 0.2 + i * 0.25, duration: 0.7, ease: EASE }}
                   className="group relative w-full max-w-sm mx-auto"
                 >
                   {/* Card glow effect on hover */}

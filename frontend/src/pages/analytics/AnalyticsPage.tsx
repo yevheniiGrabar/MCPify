@@ -208,10 +208,12 @@ export function AnalyticsPage() {
                   <YAxis tick={{ fontSize: 12, fill: '#71717a' }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1c1c22', border: '1px solid #27272a', borderRadius: '8px', color: '#fff' }}
-                    labelFormatter={(v: string) => new Date(v).toLocaleString()}
-                    formatter={(value: number, name: string) => [
-                      value,
-                      name === 'calls' ? 'Calls' : name === 'errors' ? 'Errors' : 'Avg Duration (ms)',
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    labelFormatter={(v: any) => new Date(v as string).toLocaleString()}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(value: any, name: any) => [
+                      value as number,
+                      (name as string) === 'calls' ? 'Calls' : (name as string) === 'errors' ? 'Errors' : 'Avg Duration (ms)',
                     ]}
                   />
                   <Area
@@ -254,9 +256,10 @@ export function AnalyticsPage() {
                   />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1c1c22', border: '1px solid #27272a', borderRadius: '8px', color: '#fff' }}
-                    formatter={(value: number, name: string) => [
-                      value,
-                      name === 'total_calls' ? 'Calls' : 'Errors',
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(value: any, name: any) => [
+                      value as number,
+                      (name as string) === 'total_calls' ? 'Calls' : 'Errors',
                     ]}
                   />
                   <Bar dataKey="total_calls" fill="#6366f1" radius={[0, 4, 4, 0]} />

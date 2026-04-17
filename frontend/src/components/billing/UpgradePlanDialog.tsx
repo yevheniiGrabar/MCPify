@@ -8,24 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ArrowUpRight, Check, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-interface FreemiusCheckoutInstance {
-  open: (opts: Record<string, unknown>) => void
-  close: () => void
-}
-
-declare global {
-  interface Window {
-    FS: {
-      Checkout: new (config: Record<string, unknown>) => FreemiusCheckoutInstance
-    }
-  }
-}
 
 interface UpgradePlanDialogProps {
   open: boolean

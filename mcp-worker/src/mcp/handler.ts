@@ -90,8 +90,8 @@ export async function createMcpServer(serviceData: ServiceWithConfig, caller?: C
         description,
         inputSchema: Object.keys(zodShape).length > 0 ? zodShape : undefined,
         annotations: {
-          readOnlyHint: !tool.is_destructive,
-          destructiveHint: tool.is_destructive,
+          readOnlyHint: tool.is_destructive === false,
+          destructiveHint: tool.is_destructive === true,
         },
       },
       async (args: Record<string, unknown>) => {

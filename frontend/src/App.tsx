@@ -14,7 +14,7 @@ import {
   ToolsPage,
 } from '@/pages/services'
 import { SettingsPage } from '@/pages/settings'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 export function App() {
   return (

@@ -36,35 +36,6 @@ import { toast } from 'sonner'
 import { useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-interface FreemiusCheckoutInstance {
-  open: (opts: {
-    name?: string
-    licenses?: number
-    billing_cycle?: 'monthly' | 'annual' | 'lifetime'
-    user_email?: string
-    user_firstname?: string
-    readonly_user?: boolean
-    sandbox?: { token: string; ctx: string }
-    success?: (data: Record<string, unknown>) => void
-    purchaseCompleted?: (data: Record<string, unknown>) => void
-    cancel?: () => void
-    afterClose?: () => void
-  }) => void
-  close: () => void
-}
-
-declare global {
-  interface Window {
-    FS: {
-      Checkout: new (config: {
-        product_id: string
-        plan_id: number
-        public_key: string
-        image?: string
-      }) => FreemiusCheckoutInstance
-    }
-  }
-}
 
 const PLAN_ORDER = ['free', 'starter', 'growth', 'business'] as const
 
