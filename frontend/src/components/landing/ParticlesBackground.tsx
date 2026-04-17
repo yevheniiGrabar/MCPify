@@ -1,66 +1,130 @@
-'use client'
+import { useEffect, useRef } from 'react'
 
-import { useCallback, useEffect, useState } from 'react'
-import Particles, { initParticlesEngine } from '@tsparticles/react'
-import { loadSlim } from '@tsparticles/slim'
-import type { ISourceOptions } from '@tsparticles/engine'
-
-const options: ISourceOptions = {
-  fullScreen: { enable: false },
-  fpsLimit: 60,
-  interactivity: {
-    events: {
-      onHover: { enable: true, mode: 'grab' },
-      onClick: { enable: true, mode: 'push' },
-    },
-    modes: {
-      grab: { distance: 160, links: { opacity: 0.4 } },
-      push: { quantity: 3 },
-    },
-  },
-  particles: {
-    number: { value: 60, density: { enable: true } },
-    color: { value: ['#7c3aed', '#a855f7', '#ec4899', '#6366f1'] },
-    links: {
-      enable: true,
-      distance: 130,
-      color: '#7c3aed',
-      opacity: 0.15,
-      width: 1,
-    },
-    move: {
-      enable: true,
-      speed: 0.6,
-      direction: 'none',
-      random: true,
-      outModes: { default: 'bounce' },
-    },
-    shape: { type: 'circle' },
-    opacity: { value: { min: 0.2, max: 0.6 } },
-    size: { value: { min: 1, max: 3 } },
-  },
-  detectRetina: true,
+interface Particle {
+  x: number
+  y: number
+  vx: number
+  vy: number
+  r: number
 }
 
 export function ParticlesBackground() {
-  const [ready, setReady] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadSlim(engine)
-    }).then(() => setReady(true))
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let W = 0
+    let H = 0
+    let animId: number
+    let mouse = { x: -9999, y: -9999 }
+    const COUNT = 55
+    const MAX_DIST = 140
+    const particles: Particle[] = []
+
+    const resize = () => {
+      W = canvas.width = canvas.offsetWidth
+      H = canvas.height = canvas.offsetHeight
+    }
+
+    const init = () => {
+      particles.length = 0
+      for (let i = 0; i < COUNT; i++) {
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          r: Math.random() * 1.5 + 1,
+        })
+      }
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H)
+
+      // move
+      for (const p of particles) {
+        p.x += p.vx
+        p.y += p.vy
+        if (p.x < 0 || p.x > W) p.vx *= -1
+        if (p.y < 0 || p.y > H) p.vy *= -1
+      }
+
+      // lines between particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x
+          const dy = particles[i].y - particles[j].y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < MAX_DIST) {
+            ctx.beginPath()
+            ctx.moveTo(particles[i].x, particles[i].y)
+            ctx.lineTo(particles[j].x, particles[j].y)
+            ctx.strokeStyle = `rgba(124,58,237,${0.15 * (1 - dist / MAX_DIST)})`
+            ctx.lineWidth = 0.8
+            ctx.stroke()
+          }
+        }
+      }
+
+      // lines to mouse
+      for (const p of particles) {
+        const dx = p.x - mouse.x
+        const dy = p.y - mouse.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < 160) {
+          ctx.beginPath()
+          ctx.moveTo(p.x, p.y)
+          ctx.lineTo(mouse.x, mouse.y)
+          ctx.strokeStyle = `rgba(168,85,247,${0.25 * (1 - dist / 160)})`
+          ctx.lineWidth = 0.8
+          ctx.stroke()
+        }
+      }
+
+      // dots
+      for (const p of particles) {
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(139,92,246,0.5)'
+        ctx.fill()
+      }
+
+      animId = requestAnimationFrame(draw)
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      mouse = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    }
+    const onMouseLeave = () => { mouse = { x: -9999, y: -9999 } }
+
+    const ro = new ResizeObserver(() => { resize(); init() })
+    ro.observe(canvas)
+    resize()
+    init()
+    draw()
+
+    window.addEventListener('mousemove', onMouseMove)
+    canvas.addEventListener('mouseleave', onMouseLeave)
+
+    return () => {
+      cancelAnimationFrame(animId)
+      ro.disconnect()
+      window.removeEventListener('mousemove', onMouseMove)
+      canvas.removeEventListener('mouseleave', onMouseLeave)
+    }
   }, [])
 
-  const particlesLoaded = useCallback(async () => {}, [])
-
-  if (!ready) return null
-
   return (
-    <Particles
-      id="tsparticles"
-      particlesLoaded={particlesLoaded}
-      options={options}
-      className="absolute inset-0 w-full h-full"
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ zIndex: 0 }}
     />
   )
 }
