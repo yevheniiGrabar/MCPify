@@ -17,6 +17,17 @@ services:
     volumes:
       - redis_data:/data
 
+  registry:
+    build:
+      context: ./registry
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
   redis_data:
