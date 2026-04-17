@@ -101,8 +101,10 @@ export function LandingPage() {
       <Integrations />
       <Features />
       <DeveloperExperience />
+      <AISalesChannel />
       <Stats />
       <Pricing />
+      <FAQ />
       <Testimonials />
       <CTA />
       <Footer />
@@ -1373,6 +1375,139 @@ function DeveloperExperience() {
 }
 
 /* ─── Stats section ─── */
+/* ─── AI Sales Channel ─── */
+function AISalesChannel() {
+  const channels = [
+    {
+      icon: '🤖',
+      title: 'AI agents discover your product',
+      description: 'When a user asks Claude or ChatGPT to "find a payment solution", your MCP server appears as a tool they can use — right in the conversation.',
+    },
+    {
+      icon: '⚡',
+      title: 'Zero friction activation',
+      description: 'No sign-up flow, no UI. The AI agent calls your API directly. Users experience your product value before they even visit your website.',
+    },
+    {
+      icon: '💰',
+      title: 'New revenue channel',
+      description: 'Every AI agent interaction is a potential conversion. Agents can create accounts, start trials, or complete purchases — all via your MCP server.',
+    },
+  ]
+
+  return (
+    <Section id="ai-channel" className="py-24 md:py-32">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div variants={fadeUp} custom={0} className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-300 text-sm font-medium mb-6">
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+            New growth channel
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            Your API becomes an
+            <br />
+            <span className="text-gradient">AI sales channel</span>
+          </h2>
+          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
+            Every AI agent that uses your MCP server is a potential customer. They discover your product, use your API, and convert — without any UI.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {channels.map((item, i) => (
+            <motion.div
+              key={item.title}
+              variants={fadeUp}
+              custom={i + 1}
+              className="bg-surface-card border border-zinc-800 rounded-2xl p-6 hover:border-emerald-500/30 transition-colors"
+            >
+              <div className="text-3xl mb-4">{item.icon}</div>
+              <h3 className="font-semibold text-white mb-2">{item.title}</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">{item.description}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div variants={fadeUp} custom={4} className="bg-gradient-to-r from-emerald-950/40 to-brand-950/40 border border-emerald-800/30 rounded-2xl p-8 text-center">
+          <p className="text-zinc-300 text-lg mb-1">
+            <span className="text-emerald-400 font-semibold">Shopify, Stripe, Notion</span> — they already have MCP servers.
+          </p>
+          <p className="text-zinc-500 text-sm">Your competitors are getting discovered by AI agents. Are you?</p>
+        </motion.div>
+      </div>
+    </Section>
+  )
+}
+
+/* ─── FAQ ─── */
+function FAQ() {
+  const faqs = [
+    {
+      q: 'Do I need to write any MCP code?',
+      a: 'No. You paste your OpenAPI spec or connect your API manually. MCPify generates the MCP server automatically. Zero MCP knowledge required.',
+    },
+    {
+      q: 'Which AI clients are supported?',
+      a: 'Claude Desktop, Cursor, ChatGPT, GitHub Copilot, VS Code, and any client that supports the MCP protocol. The list grows weekly.',
+    },
+    {
+      q: 'Is my API credentials secure?',
+      a: 'Yes. All credentials are encrypted at rest using AES-256. We never log API keys and they are never exposed in responses.',
+    },
+    {
+      q: 'What APIs can I connect?',
+      a: 'Any REST API with an OpenAPI/Swagger spec. If you don\'t have a spec, you can define endpoints manually. GraphQL and gRPC support is coming.',
+    },
+    {
+      q: 'How long does setup take?',
+      a: 'Most APIs are live in under 5 minutes. Import your spec, review the generated tools, and copy your MCP URL.',
+    },
+    {
+      q: 'Can I control which endpoints AI agents can access?',
+      a: 'Yes. You can enable or disable individual tools, set rate limits, and mark destructive endpoints as requiring explicit confirmation.',
+    },
+  ]
+
+  return (
+    <Section id="faq" className="py-24 md:py-32">
+      <div className="max-w-3xl mx-auto px-6">
+        <motion.div variants={fadeUp} custom={0} className="text-center mb-14">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+            Frequently asked questions
+          </h2>
+          <p className="text-zinc-400">Everything you need to know about MCPify.</p>
+        </motion.div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, i) => (
+            <FAQItem key={faq.q} q={faq.q} a={faq.a} index={i} />
+          ))}
+        </div>
+      </div>
+    </Section>
+  )
+}
+
+function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <motion.div variants={fadeUp} custom={index} className="border border-zinc-800 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-zinc-900/50 transition-colors"
+      >
+        <span className="font-medium text-white text-sm">{q}</span>
+        <span className={`text-zinc-400 transition-transform duration-200 ${open ? 'rotate-45' : ''}`}>+</span>
+      </button>
+      {open && (
+        <div className="px-6 pb-4 text-sm text-zinc-400 leading-relaxed border-t border-zinc-800/50 pt-3">
+          {a}
+        </div>
+      )}
+    </motion.div>
+  )
+}
+
 function Stats() {
   const stats = [
     { value: 500, suffix: '+', label: 'APIs connected' },
@@ -1625,10 +1760,11 @@ function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold">MCPify</span>
+              <span className="font-mono font-bold text-lg tracking-tight">
+                <span className="text-zinc-500">{`{ `}</span>
+                <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">mcpfy</span>
+                <span className="text-zinc-500">{` }`}</span>
+              </span>
             </div>
             <p className="text-zinc-500 text-sm leading-relaxed">
               Turn any REST API into an MCP server. Connect your product to every AI client.
