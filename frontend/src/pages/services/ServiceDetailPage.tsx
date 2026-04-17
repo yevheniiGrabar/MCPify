@@ -140,7 +140,22 @@ export function ServiceDetailPage() {
 
       <AuthConfigCard serviceId={serviceId} />
 
-      {tools.length > 0 && (
+      {tools.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-zinc-700 bg-surface-card p-8 text-center">
+          <Plug className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-white mb-1">No tools yet</h3>
+          <p className="text-xs text-zinc-500 mb-4 max-w-xs mx-auto">
+            Connect your API to auto-generate MCP tools from your endpoints
+          </p>
+          <Button
+            asChild
+            size="sm"
+            className="bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/20"
+          >
+            <Link to={`/services/${id}/connect`}>Connect API →</Link>
+          </Button>
+        </div>
+      ) : (
         <ConnectionInstructions mcpUrl={mcpUrl} />
       )}
 
@@ -223,6 +238,7 @@ function AuthConfigCard({ serviceId }: { serviceId: number }) {
   const { data: authInfo } = useServiceAuth(serviceId)
   const updateAuth = useUpdateServiceAuth(serviceId)
   const [authType, setAuthType] = useState<string>('')
+  const [baseUrl, setBaseUrl] = useState('')
   const [token, setToken] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [apiKeyHeader, setApiKeyHeader] = useState('X-API-Key')
@@ -248,7 +264,7 @@ function AuthConfigCard({ serviceId }: { serviceId: number }) {
     }
 
     updateAuth.mutate(
-      { auth_type: authType, auth_config: authConfig },
+      { auth_type: authType, base_url: baseUrl || undefined, auth_config: authConfig },
       {
         onSuccess: () => {
           toast.success('Auth configuration saved')
@@ -293,6 +309,7 @@ function AuthConfigCard({ serviceId }: { serviceId: number }) {
             className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
             onClick={() => {
               setAuthType(authInfo?.auth_type ?? 'none')
+              setBaseUrl(authInfo?.base_url ?? '')
               setIsEditing(true)
             }}
           >
@@ -301,6 +318,18 @@ function AuthConfigCard({ serviceId }: { serviceId: number }) {
         </div>
       ) : (
         <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-zinc-300 text-sm">Base URL</Label>
+            <Input
+              placeholder="https://api.example.com"
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              className={inputCls}
+            />
+            <p className="text-[11px] text-zinc-600">
+              Override the upstream API base URL (auto-detected from OpenAPI spec if left empty)
+            </p>
+          </div>
           <div className="space-y-2">
             <Label className="text-zinc-300 text-sm">Auth Type</Label>
             <Select value={authType} onValueChange={setAuthType}>

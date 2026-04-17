@@ -473,16 +473,19 @@ export function ConnectServicePage() {
             <div className="flex gap-3 justify-center">
               <Button
                 className="bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-600/20"
-                onClick={() => void navigate(`/services/${id}/tools`)}
+                asChild
               >
-                Manage Tools
+                <Link to={`/services/${id}`}>
+                  View MCP URL
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
               </Button>
               <Button
                 variant="outline"
-                asChild
                 className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                onClick={() => void navigate(`/services/${id}/tools`)}
               >
-                <Link to={`/services/${id}`}>Back to Service</Link>
+                Manage Tools
               </Button>
             </div>
           </div>

@@ -35,8 +35,8 @@ export function CreateServicePage() {
   const onSubmit = (data: FormData) => {
     createService.mutate(data, {
       onSuccess: (service) => {
-        toast.success('Service created successfully')
-        void navigate(`/services/${service.id}`)
+        toast.success('Service created — now connect your API')
+        void navigate(`/services/${service.id}/connect`)
       },
       onError: (error) => {
         if (isAxiosError(error) && error.response?.status === 403) {

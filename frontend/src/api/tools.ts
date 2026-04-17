@@ -102,6 +102,7 @@ export function useUpdateServiceAuth(serviceId: number) {
   return useMutation({
     mutationFn: async (payload: {
       auth_type: string
+      base_url?: string
       auth_config?: Record<string, unknown> | null
     }) => {
       const { data } = await client.put(`/api/v1/services/${serviceId}/auth`, payload)
