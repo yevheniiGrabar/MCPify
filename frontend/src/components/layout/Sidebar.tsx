@@ -4,7 +4,6 @@ import {
   CreditCard,
   LayoutGrid,
   Plug,
-  Zap,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
